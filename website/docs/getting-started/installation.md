@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Installation
 
-1. Install [skijasi](https://skijasi-docs.uatech.co.id/getting-started/installation) first. After that, you can install the module with the following command.
+1. Install [skijasi](https://skijasi-docs.nadzorserveraweb.hr/getting-started/installation) first. After that, you can install the module with the following command.
 
     ```bash
     composer require skijasi/commerce-module

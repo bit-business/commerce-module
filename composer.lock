@@ -583,11 +583,11 @@
             "authors": [
                 {
                     "name": "NADZORSERVERA",
-                    "email": "hello@uatech.co.id"
+                    "email": "hello@nadzorserveraweb.hr"
                 }
             ],
             "description": "The API & platform builder, build your apps 10x faster even more, it's open source & 100% free !",
-            "homepage": "https://skijasi.uatech.co.id/",
+            "homepage": "https://skijasi.nadzorserveraweb.hr/",
             "keywords": [
                 "Low Code",
                 "admin",

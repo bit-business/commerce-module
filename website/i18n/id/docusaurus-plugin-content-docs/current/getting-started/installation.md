@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Installation
 
-1. Instal [skijasi](https://skijasi-docs.uatech.co.id/getting-started/installation) dulu. Setelah itu, Anda dapat menginstal modul dengan perintah berikut.
+1. Instal [skijasi](https://skijasi-docs.nadzorserveraweb.hr/getting-started/installation) dulu. Setelah itu, Anda dapat menginstal modul dengan perintah berikut.
 
 ```bash
 composer require skijasi/commerce-module

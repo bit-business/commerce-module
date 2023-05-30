@@ -8,7 +8,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Skijasi Commerce Module Documentation",
   tagline: "Skijasi commerce module official documentation",
-  url: "https://skijasi-commerce.uatech.co.id",
+  url: "https://skijasi-commerce.nadzorserveraweb.hr",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
