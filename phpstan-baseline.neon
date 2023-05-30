@@ -1,0 +1,9 @@
+parameters:
+    ignoreErrors:
+    - '#Call to an undefined static method NadzorServera\\Skijasi\\Module\\Commerce\\[a-zA-Z0-9-()\_]+\\[a-zA-Z0-9-()\_]+::[a-zA-Z0-9-()\_]+.#'
+    - '#Call to an undefined static method Illuminate\\Support\\Facades\\DB::[a-zA-Z0-9-()\_]+.#'
+    - '#Call to an undefined static method NadzorServera\\Skijasi\\Models\\[a-zA-Z0-9-()\_]+::[a-zA-Z0-9-()\_]+.#'
+    - '#Class NadzorServera\\Skijasi\\Module\\Commerce\\Events\\GoogleAnalytics not found.#'
+    - '#Class NadzorServera\\Skijasi\\Module\\Commerce\\Listeners\\SendHit not found.#'
+
+
