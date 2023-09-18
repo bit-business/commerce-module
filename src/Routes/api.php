@@ -152,6 +152,10 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
         Route::group(['prefix' => 'user/public', 'middleware' => [SkijasiAuthenticate::class]], function () {
             Route::put('/edit', HelperRoute::getController('PublicController\UserController@edit'));
             Route::post('/change', HelperRoute::getController('PublicController\UserController@changePassword'));
+
+            Route::get('/count', HelperRoute::getController('PublicController\UserController@countUsers'));
+            Route::get('/browsezborovi', HelperRoute::getController('PublicController\UserController@fetchZborovi'));
+
         });
 
         Route::group(['prefix' => 'notification/public', 'middleware' => [SkijasiAuthenticate::class]], function () {
@@ -166,6 +170,8 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::post('/add', HelperRoute::getController('ConfigurationController@add'))->middleware(SkijasiCheckPermissions::class.':add_configurations');
             Route::delete('/delete', HelperRoute::getController('ConfigurationController@delete'))->middleware(SkijasiCheckPermissions::class.':delete_configurations');
         });
+
+
 
         Route::group(['prefix' => 'configurations'], function () {
             Route::get('/', HelperRoute::getController('ConfigurationController@browse'));

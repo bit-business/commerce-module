@@ -126,12 +126,15 @@ class OrderController extends Controller
     {
         DB::beginTransaction();
         try {
+           
+
             $request->validate([
                 'items' => 'required|array|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
                 'user_address_id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\UserAddress,id',
-                'payment_type_option_id' => 'required|string|max:255|exists:NadzorServera\Skijasi\Module\Commerce\Models\PaymentOption,id',
+              //  'payment_type_option_id' => 'required|string|max:255|exists:NadzorServera\Skijasi\Module\Commerce\Models\PaymentOption,id',
                 'message' => 'nullable|string',
             ]);
+
 
             $user_address = UserAddress::select('recipient_name', 'address_line1', 'address_line2', 'city', 'postal_code', 'country', 'phone_number')->where('id', $request->user_address_id)->where('user_id', auth()->user()->id)->firstOrFail();
 
@@ -145,12 +148,12 @@ class OrderController extends Controller
             }
 
             foreach ($request->items as $key => $item) {
-                $cart = Cart::find($item['id']);
+                $cart = Cart::find($item);
 
                 $product_detail = ProductDetail::with('discount')->findOrFail($cart->product_detail_id);
 
                 if ($cart->quantity > $product_detail->quantity) {
-                    throw new Exception('Out of stock');
+                    throw new Exception('Nema više raspoloživih');
                 }
 
                 $discount = null;

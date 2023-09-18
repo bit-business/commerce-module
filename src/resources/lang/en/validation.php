@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'stock_not_available' => 'Out of stock.',
-    'order_is_failed' => 'Cannot do the action because the order is in failed state.',
-    'limit_user_addresses' => 'Exceeding the user address limit.',
-    'cannot_change_address' => 'Cannot change the order address.',
+    'stock_not_available' => 'Nema raspoloživih više.',
+    'order_is_failed' => 'Narudžba je neuspješna. Molimo pokušajte ponovo.',
+    'limit_user_addresses' => 'Previše adresa dodajete.',
+    'cannot_change_address' => 'Nije moguće promijeniti adresu.',
 ];

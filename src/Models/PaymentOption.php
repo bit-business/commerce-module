@@ -18,6 +18,7 @@ class PaymentOption extends Model
         parent::__construct($attributes);
     }
 
+
     protected $guarded = [];
 
     protected $casts = [

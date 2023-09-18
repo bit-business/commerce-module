@@ -10,6 +10,11 @@ use NadzorServera\Skijasi\Controllers\Controller;
 use NadzorServera\Skijasi\Helpers\ApiResponse;
 use NadzorServera\Skijasi\Module\Commerce\Helper\UploadImage;
 
+use NadzorServera\Skijasi\Models\User;
+use NadzorServera\Skijasi\Module\Commerce\Models\ZboroviModel;
+
+
+
 class UserController extends Controller
 {
     public function edit(Request $request)
@@ -25,11 +30,18 @@ class UserController extends Controller
             $user = auth()->user();
             $user->name = $request->name;
             if ($request->filled('avatar')) {
-                if ($user->avatar != 'files/shares/default-user.png') {
+               /* if ($user->avatar != 'files/shares/default-user.png') {
                     UploadImage::deleteImage($user->avatar);
                 }
                 $filename = UploadImage::createImage($request->avatar);
                 $user->avatar = $filename;
+                */
+                
+                    // Instead of immediately updating the avatar, store it as a temporary avatar awaiting approval
+                    $filename = UploadImage::createImage($request->avatar);
+                    $user->new_avatar = $filename; 
+                    $user->avatar_approved = true; 
+                
             }
             $user->save();
 
@@ -66,4 +78,18 @@ class UserController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+
+
+
+    public function countUsers() {
+        $totalUsers = User::count();
+        return response()->json(['totalUsers' => $totalUsers]);
+    }
+
+    public function fetchZborovi() {
+        $departments = ZboroviModel::all();
+        return response()->json($departments);
+    }
+    
 }

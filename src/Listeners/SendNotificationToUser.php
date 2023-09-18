@@ -31,12 +31,12 @@ class SendNotificationToUser
 
         switch ($status) {
             case 'waitingBuyerPayment':
-                $title = 'Order placed successfully';
-                $content = "Congratulations! Your order number is #{$event->order->id} is placed successfully. Please complete the transaction within time limit.";
+                $title = 'Uspješno ste napravili narudžbu';
+                $content = "Čestitamo broj Vaše narudžbe je: #{$event->order->id}. Podaci za plaćanje su ispod:";
                 break;
             case 'waitingSellerConfirmation':
-                $title = 'Waiting seller to confirm';
-                $content = "Your order with number #{$event->order->id} is on confirmation list. The seller will check your proof of transaction valid or not.";
+                $title = 'Čeka se potvrda plaćanja';
+                $content = "Čestitamo broj Vaše narudžbe je:  #{$event->order->id}. Provjeravamo Vašu uplatu, te ćemo Vam ubrzo javiti čim potvrdimo uplatu.";
                 break;
             case 'process':
                 $title = 'Order is being processed';

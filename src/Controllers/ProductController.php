@@ -91,6 +91,9 @@ class ProductController extends Controller
                 'name' => $request->name,
                 'slug' => $request->slug,
                 'product_image' => $request->product_image,
+                'mjesto' => $request->mjesto,
+                'datum_pocetka' => $request->datum_kraja,
+                'datum_kraja' => $request->datum_pocetka,
                 'desc' => $request->desc,
             ]);
 
@@ -201,6 +204,9 @@ class ProductController extends Controller
 
             $product = Product::where('id', $request->id)->first();
             $product->product_category_id = $request->product_category_id;
+            $product->datum_pocetka = $request->datum_pocetka;
+            $product->datum_kraja = $request->datum_kraja;
+            $product->mjesto = $request->mjesto;
             $product->name = $request->name;
             $product->product_image = $request->product_image;
             $product->desc = $request->desc;

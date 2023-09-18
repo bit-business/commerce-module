@@ -30,6 +30,11 @@ class Product extends Model
         'slug',
         'desc',
         'product_image',
+
+        'datum_pocetka',
+        'datum_kraja',
+        'mjesto',
+
         'created_at',
         'updated_at',
         'deleted_at',

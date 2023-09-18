@@ -48,7 +48,7 @@
             </tr>
             <tr>
               <th>{{ $t("product.detail.header.deletedAt") }}</th>
-              <td>{{ product.deletedAt ? getDate(product.deletedAt) : 'None' }}</td>
+              <td>{{ product.deletedAt ? getDate(product.deletedAt) : 'Nema zapisa' }}</td>
             </tr>
           </table>
         </vs-card>
@@ -63,8 +63,8 @@
               <h6 class="mb-0"><strong>{{ productDetail.name }}</strong></h6>
               <small>{{ productDetail.SKU }}</small>
               <h3 class="mb-2 mt-2">{{ toCurrency(productDetail.price) }}</h3>
-              <small>{{ productDetail.quantity }} in stock</small>
-              <small v-if="productDetail.discountId" class="d-block">Discount: {{  `${productDetail.discount.name} - ${productDetail.discount.discountType === 'fixed' ? toCurrency(productDetail.discount.discountFixed) : productDetail.discount.discountPercent + '%' }` }}</small>
+              <small>{{ productDetail.quantity }} dostupno</small>
+              <small v-if="productDetail.discountId" class="d-block">Popust: {{  `${productDetail.discount.name} - ${productDetail.discount.discountType === 'fixed' ? toCurrency(productDetail.discount.discountFixed) : productDetail.discount.discountPercent + '%' }` }}</small>
             </div>
           </vs-card>
         </vs-col>

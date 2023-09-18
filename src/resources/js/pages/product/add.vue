@@ -42,6 +42,7 @@
                 :placeholder="$t('product.add.field.productCategoryId.placeholder')"
                 :alert="errors.productCategoryId"
                 :items="categories"
+                @input="updateCategoryName"
                 style="margin-bottom: 8px !important;"
               ></skijasi-select>
               <template v-if="$v.product.$dirty">
@@ -61,13 +62,67 @@
                 <span class="danger" v-if="$v.product.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
+
+
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-datetime
+                v-model="product.datum_pocetka"
+                value-zone="local"
+                size="12"
+                :label="$t('Datum početka događaja')"    
+                :alert="errors.datum_pocetka"
+                style="margin-bottom: 8px !important;"
+              ></skijasi-datetime>
+              <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.datum_pocetka.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-date
+                v-model="product.datum_kraja"
+                value-zone="local"
+                size="12"
+                :label="$t('Datum kraja događaja')"
+                :alert="errors.datum_kraja"
+                style="margin-bottom: 8px !important;"
+              ></skijasi-date>
+              <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.datum_kraja.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
+
+
+
+            <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
             <skijasi-editor
               v-model="product.desc"
-              size="6"
+              size="12"
               :label="$t('product.add.field.desc.title')"
               :placeholder="$t('product.add.field.desc.placeholder')"
               :alert="errors.desc"
             ></skijasi-editor>
+          </vs-col>
+
+
+          <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-text
+                v-model="product.mjesto"
+                size="12"
+                :label="('Mjesto događaja')"
+                :placeholder="$t('Unesi mjesto događaja (obavezno)')"
+                :alert="errors.mjesto"
+                style="margin-bottom: 8px !important;"
+              ></skijasi-text>
+              <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.mjesto.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
+
+
+
+
           </vs-row>
         </vs-card>
       </vs-col>
@@ -134,7 +189,7 @@
               <vs-tr>
                 <vs-td colspan="8" class="product-detail__button--add">
                   <vs-button type="relief" icon="add" color="primary" @click="openAddProductDetail">
-                    Add new product
+                    Dodaj novu cijenu/opciju
                   </vs-button>
                 </vs-td>
               </vs-tr>
@@ -326,10 +381,13 @@
 <script>
 import { required, minValue, maxValue, integer } from "vuelidate/lib/validators";
 import currency from "currency.js"
+import moment from "moment";
 export default {
   name: "ProductAdd",
   components: {},
   data: () => ({
+    selectedCategoryName: '',
+    
     errors: {},
     product: {
       productCategoryId: "",
@@ -337,6 +395,8 @@ export default {
       slug: "",
       productImage: "",
       desc: "",
+      datum_pocetka: "",
+      datum_kraja: "",
     },
     addProductDetail: {
       discountId: '',
@@ -435,6 +495,15 @@ export default {
     this.getProductDiscounts()
   },
   methods: {
+
+    updateCategoryName() {
+    const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
+    this.selectedCategoryName = selectedCategory ? selectedCategory.label : '';
+}
+,
+
+
+
     toCurrency(value) {
       return currency(value, {
         precision: this.$store.state.skijasi.config.currencyPrecision,
@@ -499,6 +568,21 @@ export default {
         this.$v.product.$reset()
         try {
           this.$openLoader();
+  
+              // Remove datum_pocetka from the product if selectedCategoryName is "Licenca"
+              if (this.selectedCategoryName == "Licenca") {
+                delete this.product.datum_pocetka;
+                delete this.product.datum_kraja;
+            } else{
+                 // Format the datum_pocetka and datum_kraja using moment
+      if (this.product.datum_pocetka) {
+         this.product.datum_pocetka = moment(this.product.datum_pocetka).format('YYYY-MM-DD HH:mm:ss');
+      }
+      if (this.product.datum_kraja) {
+         this.product.datum_kraja = moment(this.product.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
+      } }
+
+
           this.$api.skijasiProduct
             .add({ ...this.product, items: this.items })
             .then((response) => {
