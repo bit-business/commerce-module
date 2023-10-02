@@ -66,14 +66,14 @@
 
 
             <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
-              <skijasi-datetime
+              <skijasi-date
                 v-model="product.datum_pocetka"
                 value-zone="local"
                 size="12"
                 :label="$t('Datum početka događaja')"    
                 :alert="errors.datum_pocetka"
                 style="margin-bottom: 8px !important;"
-              ></skijasi-datetime>
+              ></skijasi-date>
               <template v-if="$v.product.$dirty">
                 <span class="danger" v-if="$v.product.datum_pocetka.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
@@ -499,8 +499,7 @@ export default {
     updateCategoryName() {
     const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
     this.selectedCategoryName = selectedCategory ? selectedCategory.label : '';
-}
-,
+},
 
 
 
