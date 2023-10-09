@@ -29,6 +29,10 @@ class Product extends Model
         'name',
         'slug',
         'desc',
+        'desc2',
+        'desc3',
+        'desc4',
+        'desc5',
         'product_image',
 
         'datum_pocetka',

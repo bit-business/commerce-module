@@ -77,6 +77,10 @@ class ProductController extends Controller
                 'slug' => 'required|string|max:255|unique:NadzorServera\Skijasi\Module\Commerce\Models\Product',
                 'product_image' => 'required|string',
                 'desc' => 'nullable|string',
+                'desc2' => 'nullable|string',
+                'desc3' => 'nullable|string',
+                'desc4' => 'nullable|string',
+                'desc5' => 'nullable|string',
                 'items' => 'required|array',
                 'items.*.discount_id' => 'nullable|integer|exists:NadzorServera\Skijasi\Module\Commerce\Models\Discount,id',
                 'items.*.name' => 'required|string|max:255',
@@ -95,6 +99,10 @@ class ProductController extends Controller
                 'datum_pocetka' => $request->datum_kraja,
                 'datum_kraja' => $request->datum_pocetka,
                 'desc' => $request->desc,
+                'desc2' => $request->desc2,
+                'desc3' => $request->desc3,
+                'desc4' => $request->desc4,
+                'desc5' => $request->desc5,
             ]);
 
             $product = Product::select('id')->latest()->first();
@@ -200,6 +208,10 @@ class ProductController extends Controller
                 'name' => 'required|string|max:255',
                 'product_image' => 'required|string',
                 'desc' => 'nullable|string',
+                'desc2' => 'nullable|string',
+                'desc3' => 'nullable|string',
+                'desc4' => 'nullable|string',
+                'desc5' => 'nullable|string',
             ]);
 
             $product = Product::where('id', $request->id)->first();
@@ -210,6 +222,10 @@ class ProductController extends Controller
             $product->name = $request->name;
             $product->product_image = $request->product_image;
             $product->desc = $request->desc;
+            $product->desc2 = $request->desc2;
+            $product->desc3 = $request->desc3;
+            $product->desc4 = $request->desc4;
+            $product->desc5 = $request->desc5;
             $product->save();
 
             DB::commit();

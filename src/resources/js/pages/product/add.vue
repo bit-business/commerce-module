@@ -106,6 +106,46 @@
           </vs-col>
 
 
+          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-editor
+              v-model="product.desc2"
+              size="12"
+              :label="$t('product.add.field.desc2.title')"
+              :placeholder="$t('product.add.field.desc2.placeholder')"
+              :alert="errors.desc2"
+            ></skijasi-editor>
+          </vs-col>
+
+          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-editor
+              v-model="product.desc3"
+              size="12"
+              :label="$t('product.add.field.desc3.title')"
+              :placeholder="$t('product.add.field.desc3.placeholder')"
+              :alert="errors.desc3"
+            ></skijasi-editor>
+          </vs-col>
+
+          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-editor
+              v-model="product.desc4"
+              size="12"
+              :label="$t('product.add.field.desc4.title')"
+              :placeholder="$t('product.add.field.desc4.placeholder')"
+              :alert="errors.desc4"
+            ></skijasi-editor>
+          </vs-col>
+          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-editor
+              v-model="product.desc5"
+              size="12"
+              :label="$t('product.add.field.desc5.title')"
+              :placeholder="$t('product.add.field.desc5.placeholder')"
+              :alert="errors.desc5"
+            ></skijasi-editor>
+          </vs-col>
+
+
           <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
               <skijasi-text
                 v-model="product.mjesto"
@@ -395,6 +435,10 @@ export default {
       slug: "",
       productImage: "",
       desc: "",
+      desc2: "",
+      desc3: "",
+      desc4: "",
+      desc5: "",
       datum_pocetka: "",
       datum_kraja: "",
     },
