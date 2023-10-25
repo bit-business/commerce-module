@@ -38,6 +38,7 @@ class Product extends Model
         'datum_pocetka',
         'datum_kraja',
         'mjesto',
+        'prijavnicalink',
 
         'created_at',
         'updated_at',
