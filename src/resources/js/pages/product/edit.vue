@@ -62,40 +62,46 @@
                 <span class="danger" v-if="$v.product.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
+            
             <skijasi-editor
+              editorId="editor1"
               v-model="product.desc"
-              size="6"
-              :label="$t('product.add.field.desc.title')"
+              size="12"
+              :label="$t('Tekst za rubriku O Skijalištu')"
               :placeholder="$t('product.add.field.desc.placeholder')"
               :alert="errors.desc"
             ></skijasi-editor>
 
             <skijasi-editor
+              editorId="editor2"
               v-model="product.desc2"
-              size="6"
-              :label="$t('product.add.field.desc2.title')"
-              :placeholder="$t('product.add.field.desc2.placeholder')"
+              size="12"
+              :label="$t('Tekst za rubriku Informacije')"
+              :placeholder="$t('')"
               :alert="errors.desc2"
             ></skijasi-editor>
             <skijasi-editor
+            editorId="editor3"
               v-model="product.desc3"
-              size="6"
-              :label="$t('product.add.field.desc3.title')"
-              :placeholder="$t('product.add.field.desc3.placeholder')"
+              size="12"
+              :label="$t('Tekst za rubriku Smještaj')"
+              :placeholder="$t('')"
               :alert="errors.desc3"
             ></skijasi-editor>
             <skijasi-editor
+            editorId="editor4"
               v-model="product.desc4"
-              size="6"
-              :label="$t('product.add.field.desc4.title')"
-              :placeholder="$t('product.add.field.desc4.placeholder')"
+              size="12"
+              :label="$t('Tekst za rubriku Prijevoz')"
+              :placeholder="$t('')"
               :alert="errors.desc4"
             ></skijasi-editor>
             <skijasi-editor
+            editorId="editor5"
               v-model="product.desc5"
-              size="6"
-              :label="$t('product.add.field.desc5.title')"
-              :placeholder="$t('product.add.field.desc5.placeholder')"
+              size="12"
+              :label="$t('Tekst za rubriku Plaćanje')"
+              :placeholder="$t('')"
               :alert="errors.desc5"
             ></skijasi-editor>
 
@@ -363,6 +369,7 @@ export default {
   name: "ProductAdd",
   components: {},
   data: () => ({
+    
     errors: {},
     product: {
       productCategoryId: "",
