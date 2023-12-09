@@ -22,14 +22,41 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try {
-            $request->validate([
-                'name'   => 'required',
-                'avatar' => 'nullable',
-            ]);
+          
 
             $user = auth()->user();
-            $user->name = $request->name;
-            if ($request->filled('avatar')) {
+      
+
+            if ($request->has('additional_info')) {
+                $user->additional_info = $request->additional_info;
+            }
+    
+            if ($request->has('datumrodjenja')) {
+                $user->datumrodjenja = $request->datumrodjenja;
+            }
+            if ($request->has('brojmobitela')) {
+                $user->brojmobitela = $request->brojmobitela;
+            }
+            if ($request->has('drzava')) {
+                $user->drzava = $request->drzava;
+            }
+            if ($request->has('grad')) {
+                $user->grad = $request->grad;
+            }
+            if ($request->has('postanskibroj')) {
+                $user->postanskibroj = $request->postanskibroj;
+            }
+            if ($request->has('adresa')) {
+                $user->adresa = $request->adresa;
+            }
+            if ($request->has('oib')) {
+                $user->oib = $request->oib;
+            }
+            if ($request->has('spol')) {
+                $user->spol = $request->spol;
+            }
+
+            if ($request->hasFile('avatar')) {
                /* if ($user->avatar != 'files/shares/default-user.png') {
                     UploadImage::deleteImage($user->avatar);
                 }
@@ -38,7 +65,7 @@ class UserController extends Controller
                 */
                 
                     // Instead of immediately updating the avatar, store it as a temporary avatar awaiting approval
-                    $filename = UploadImage::createImage($request->avatar);
+                    $filename = UploadImage::createImageEdit($request->avatar);
                     $user->new_avatar = $filename; 
                     $user->avatar_approved = true; 
                 
