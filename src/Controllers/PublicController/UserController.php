@@ -56,7 +56,7 @@ class UserController extends Controller
                 $user->spol = $request->spol;
             }
 
-            if ($request->hasFile('avatar')) {
+            if ($request->filled('avatar')) {
                /* if ($user->avatar != 'files/shares/default-user.png') {
                     UploadImage::deleteImage($user->avatar);
                 }
