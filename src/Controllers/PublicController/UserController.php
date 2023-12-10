@@ -56,7 +56,7 @@ class UserController extends Controller
                 $user->spol = $request->spol;
             }
 
-            if ($request->filled('avatar')) {
+            if ($request->has('avatar')) {
                /* if ($user->avatar != 'files/shares/default-user.png') {
                     UploadImage::deleteImage($user->avatar);
                 }
@@ -65,7 +65,7 @@ class UserController extends Controller
                 */
                 
                     // Instead of immediately updating the avatar, store it as a temporary avatar awaiting approval
-                    $filename = UploadImage::createImageEdit($request->avatar);
+                    $filename = UploadImage::createImageEdit($request->avatar, $user->name, $user->username, $user->id);
                     $user->new_avatar = $filename; 
                     $user->avatar_approved = true; 
                 
