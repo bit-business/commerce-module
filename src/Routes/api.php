@@ -158,6 +158,7 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
         Route::group(['prefix' => 'user/public', 'middleware' => [SkijasiAuthenticate::class]], function () {
             Route::put('/edit', HelperRoute::getController('PublicController\UserController@edit'));
             Route::post('/change', HelperRoute::getController('PublicController\UserController@changePassword'));
+            Route::put('/prijavnicaedit', HelperRoute::getController('PublicController\UserController@prijavnicaedit'));
 
            
         });

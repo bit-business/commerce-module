@@ -70,6 +70,8 @@ class UserController extends Controller
                     $user->avatar_approved = true; 
                 
             }
+            
+
             $user->save();
 
             DB::commit();
@@ -81,6 +83,76 @@ class UserController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+
+    public function prijavnicaedit(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+          
+
+            $user = auth()->user();
+      
+
+            if ($request->has('additional_info')) {
+                $user->additional_info = $request->additional_info;
+            }
+    
+            if ($request->has('datumrodjenja')) {
+                $user->datumrodjenja = $request->datumrodjenja;
+            }
+            if ($request->has('brojmobitela')) {
+                $user->brojmobitela = $request->brojmobitela;
+            }
+            if ($request->has('drzava')) {
+                $user->drzava = $request->drzava;
+            }
+            if ($request->has('grad')) {
+                $user->grad = $request->grad;
+            }
+            if ($request->has('postanskibroj')) {
+                $user->postanskibroj = $request->postanskibroj;
+            }
+            if ($request->has('adresa')) {
+                $user->adresa = $request->adresa;
+            }
+            if ($request->has('oib')) {
+                $user->oib = $request->oib;
+            }
+            if ($request->has('spol')) {
+                $user->spol = $request->spol;
+            }
+
+            if ($request->has('podrucnizbor')) {
+                $user->department = $request->podrucnizbor;
+            }
+
+            if ($request->has('avatar')) {
+         
+                    // Instead of immediately updating the avatar, store it as a temporary avatar awaiting approval
+                    $filename = UploadImage::createImage($request->avatar, $user->name, $user->username, $user->id);
+                    $user->avatar = $filename; 
+                 //   $user->avatar_approved = true; 
+                
+            }
+            if ($request->has('avatar_approved')) {
+                $user->avatar_approved = 2; 
+            }
+            
+
+            $user->save();
+
+            DB::commit();
+
+            return ApiResponse::success(['user' => auth()->user()]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return ApiResponse::failed($e);
+        }
+    }
+    
 
     public function changePassword(Request $request)
     {
