@@ -131,13 +131,13 @@ class UserController extends Controller
             if ($request->has('avatar')) {
          
                     // Instead of immediately updating the avatar, store it as a temporary avatar awaiting approval
-                    $filename = UploadImage::createImage($request->avatar, $user->name, $user->username, $user->id);
-                    $user->avatar = $filename; 
-                 //   $user->avatar_approved = true; 
+                    $filename = UploadImage::createImageEdit($request->avatar, $user->name, $user->username, $user->id);
+                    $user->new_avatar = $filename; 
+                    $user->avatar_approved = true; 
                 
             }
-            if ($request->has('avatar_approved')) {
-                $user->avatar_approved = 2; 
+            if ($request->has('zahtjev_approved')) {
+                $user->zahtjev_approved = 1; 
             }
             
 
