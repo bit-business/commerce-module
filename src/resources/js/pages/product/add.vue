@@ -50,14 +50,14 @@
               </template>
             </vs-col>
             <vs-col vs-w="6" class="mb-3">
-              <skijasi-upload-image
+              <skijasi-upload-image-dogadaji
                 v-model="product.productImage"
                 size="12"
                 :label="$t('product.add.field.productImage.title')"
                 :placeholder="$t('product.add.field.productImage.placeholder')"
                 :alert="errors.productImage"
                 style="margin-bottom: 8px !important;"
-              ></skijasi-upload-image>
+              ></skijasi-upload-image-dogadaji>
               <template v-if="$v.product.$dirty">
                 <span class="danger" v-if="$v.product.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
@@ -312,14 +312,14 @@
             :items="discounts"
           ></skijasi-select>
           <vs-col vs-w="6" class="mb-3">
-            <skijasi-upload-image
+            <skijasi-upload-image-dogadaji
               v-model="addProductDetail.productImage"
               size="12"
               :label="$t('product.add.detail.add.field.productImage.title')"
               :placeholder="$t('product.add.detail.add.field.productImage.placeholder')"
               :alert="errors.productImage"
               style="margin-bottom: 8px !important;"
-            ></skijasi-upload-image>
+            ></skijasi-upload-image-dogadaji>
             <template v-if="$v.addProductDetail.$dirty">
               <span class="danger" v-if="$v.addProductDetail.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
@@ -395,14 +395,14 @@
             :items="discounts"
           ></skijasi-select>
           <vs-col vs-w="6" class="mb-3">
-            <skijasi-upload-image
+            <skijasi-upload-image-dogadaji
               v-model="editProductDetail.productImage"
               size="12"
               :label="$t('product.add.detail.edit.field.productImage.title')"
               :placeholder="$t('product.add.detail.edit.field.productImage.placeholder')"
               :alert="errors.productImage"
               style="margin-bottom: 8px !important;"
-            ></skijasi-upload-image>
+            ></skijasi-upload-image-dogadaji>
             <template v-if="$v.editProductDetail.$dirty">
               <span class="danger" v-if="$v.editProductDetail.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
