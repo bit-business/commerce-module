@@ -180,11 +180,17 @@ class UserController extends Controller
 
 
 
-
     public function countUsers() {
-        $totalUsers = User::count();
+        $totalUsers = User::where('user_type', 'Hzuts član')
+                        ->whereNull('dateendmember')
+                        ->count();
+    
         return response()->json(['totalUsers' => $totalUsers]);
     }
+    
+    
+
+
 
     public function fetchZborovi() {
         $departments = ZboroviModel::all();
