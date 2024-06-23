@@ -39,20 +39,20 @@ class SendNotificationToUser
                 $content = "Čestitamo broj Vaše narudžbe je:  #{$event->order->id}. Provjeravamo Vašu uplatu, te ćemo Vam ubrzo javiti čim potvrdimo uplatu.";
                 break;
             case 'process':
-                $title = 'Order is being processed';
-                $content = "Your order with number #{$event->order->id} is being processed. The seller will immediately send your package.";
+                $title = 'Vaša kupnja je u obradi';
+                $content = "Vaša narudžba sa brojem #{$event->order->id} je u obradi. ";
                 break;
             case 'delivering':
-                $title = 'Order has been sent';
-                $content = "Your order with number #{$event->order->id} is on the way. You can check the tracking number on Order Detail page";
+                $title = 'Informacije o vašoj narudžbi';
+                $content = "Imamo poruku vezanu za vašu narudžbu broj #{$event->order->id}. ";
                 break;
             case 'done':
-                $title = 'Order has arrived';
-                $content = "Your order with number #{$event->order->id} has shipped. Thanks so much for shopping with us.";
+                $title = 'Vaša kupnja je potvrđena';
+                $content = "Vaša narudžba na HZUTS web stranici pod brojem #{$event->order->id} je upješno potvrđena. Hvala Vam na kupnji!";
                 break;
             case 'cancel':
-                $title = 'Order has been cancelled';
-                $content = "Your order with number #{$event->order->id} has been cancelled.";
+                $title = 'Narudžba je odbijena';
+                $content = "Vaša narudžba broj #{$event->order->id} je odbijena. Ukoliko mislite da je ovo greška, molimo Vas kontaktirajte nas.";
                 break;
             default:
                 return;

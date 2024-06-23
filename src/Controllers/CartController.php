@@ -55,4 +55,20 @@ class CartController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+    public function delete(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
+            ]);
+
+            $cart = Cart::findOrFail($request->id);
+            $cart->delete();
+
+            return ApiResponse::success(['message' => 'Zaduzenje/kosarica obrisana uspjesno']);
+        } catch (Exception $e) {
+            return ApiResponse::failed($e);
+        }
+    }
 }

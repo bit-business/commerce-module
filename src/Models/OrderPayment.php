@@ -14,7 +14,7 @@ class OrderPayment extends Model
     public function __construct(array $attributes = [])
     {
         $prefix = config('skijasi.database.prefix');
-        $this->table = $prefix.'order_payments';
+        $this->table = 'skijasi_order_payments';
         parent::__construct($attributes);
     }
 

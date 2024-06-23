@@ -25,7 +25,10 @@
               @select="handleSelect"
               @sort="handleSort"
             >
-              <template slot="thead">
+              <template slot="thead" style="text-align: center;">
+                <vs-th> 
+                  <!-- {{ $t("orders.browse.header.action") }} -->
+                   </vs-th>
                 <skijasi-th sort-key="id">
                   {{ $t("orders.browse.header.orderId") }}
                 </skijasi-th>
@@ -47,7 +50,7 @@
                 <skijasi-th sort-key="orderedAt">
                   {{ $t("orders.browse.header.orderedAt") }}
                 </skijasi-th>
-                <vs-th> {{ $t("orders.browse.header.action") }} </vs-th>
+                
               </template>
 
               <template slot="tbody">
@@ -55,12 +58,26 @@
                   :data="order"
                   :key="index"
                   v-for="(order, index) in orders.data"
+                  style="text-align: center;"
                 >
+                <vs-td style="width: 1%; white-space: nowrap">
+
+<vs-button
+    size="large"
+
+icon="visibility"
+    :to="{
+        name: 'OrderConfirm',
+        params: { id: order.id },
+      }"
+        v-if="$helper.isAllowed('confirm_orders')"
+  >Detalji</vs-button>
+</vs-td>
                   <vs-td :data="order.id">
                     {{ order.id }}
                   </vs-td>
                   <vs-td :data="order.user.name">
-                    {{ order.user.name }}
+                    {{ order.user.name }}   {{ order.user.username }}
                   </vs-td>
                   <vs-td :data="order.total">
                     {{ toCurrency(order.total) }}
@@ -77,27 +94,7 @@
                   <vs-td :data="order.createdAt">
                     {{ getDate(order.createdAt) }}
                   </vs-td>
-                  <vs-td style="width: 1%; white-space: nowrap">
-                    <skijasi-dropdown vs-trigger-click>
-                      <vs-button
-                        size="large"
-                        type="flat"
-                        icon="more_vert"
-                      ></vs-button>
-                      <vs-dropdown-menu>
-                        <skijasi-dropdown-item
-                          icon="check"
-                          :to="{
-                            name: 'OrderConfirm',
-                            params: { id: order.id },
-                          }"
-                          v-if="$helper.isAllowed('confirm_orders')"
-                        >
-                          Confirm
-                        </skijasi-dropdown-item>
-                      </vs-dropdown-menu>
-                    </skijasi-dropdown>
-                  </vs-td>
+              
                 </vs-tr>
               </template>
             </skijasi-server-side-table>
@@ -137,13 +134,14 @@ export default {
   },
   methods: {
     toCurrency(value) {
-      return currency(value, {
-        precision: this.$store.state.skijasi.config.currencyPrecision,
-        decimal: this.$store.state.skijasi.config.currencyDecimal,
-        separator: this.$store.state.skijasi.config.currencySeparator,
-        symbol: this.$store.state.skijasi.config.currencySymbol,
-      }).format();
-    },
+    return currency(value, {
+      precision: this.$store.state.skijasi.config.currencyPrecision,
+      decimal: this.$store.state.skijasi.config.currencyDecimal,
+      separator: this.$store.state.skijasi.config.currencySeparator,
+      symbol: this.$store.state.skijasi.config.currencySymbol,
+      format: (value, options) => `${value} ${options.symbol}`
+    }).format()
+  },
     getDate(date) {
       return moment(date).format("DD MMMM YYYY HH:mm:ss");
     },

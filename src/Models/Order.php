@@ -19,7 +19,7 @@ class Order extends Model
     public function __construct(array $attributes = [])
     {
         $prefix = config('skijasi.database.prefix');
-        $this->table = $prefix.'orders';
+        $this->table = 'skijasi_orders';
         parent::__construct($attributes);
     }
 

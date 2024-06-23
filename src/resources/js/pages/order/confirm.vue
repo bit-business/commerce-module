@@ -11,31 +11,30 @@
           <table class="skijasi-table">
             <tr>
               <th>{{ $t("orders.confirm.header.recipientName") }}</th>
-              <td>{{ order.recipientName }}</td>
+              <td>{{ order.user.name }} {{ order.user.username }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.addressLine1") }}</th>
-              <td>{{ order.addressLine1 }}</td>
-            </tr>
-            <tr>
-              <th>{{ $t("orders.confirm.header.addressLine2") }}</th>
-              <td>{{ order.addressLine2 }}</td>
+              <td>{{ order.user.adresa }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.city") }}</th>
-              <td>{{ order.city }}</td>
+              <td>{{ order.user.grad }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.postalCode") }}</th>
-              <td>{{ order.postalCode }}</td>
+              <td>{{ order.user.postanskibroj }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.country") }}</th>
-              <td>{{ order.country }}</td>
+              <td>{{ order.user.drzava }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.phoneNumber") }}</th>
-              <td>{{ order.phoneNumber }}</td>
+              <td>{{ order.user.brojmobitela }}</td>
+            </tr><tr>
+              <th>{{ $t("orders.confirm.header.user.email") }}</th>
+              <td>{{ order.user.email }}</td>
             </tr>
           </table>
         </vs-card>
@@ -48,9 +47,9 @@
               <div>
                 <h2>{{ orderDetail.productDetail.product.name }}</h2>
                 <h1>{{ toCurrency(orderDetail.productDetail.price) }}</h1>
-                <p>Variant: {{ orderDetail.productDetail.SKU }}</p>
-                <p>Discount: {{ toCurrency(orderDetail.discounted) }}</p>
-                <p>Qty: {{ orderDetail.quantity }} pcs</p>
+                <p>Status člana: {{ orderDetail.productDetail.SKU }}</p>
+                <p>Iznos popusta: {{ toCurrency(orderDetail.discounted) }}</p>
+                <p>Količina: {{ orderDetail.quantity }} komada</p>
               </div>
             </vs-card>
           </vs-col>
@@ -86,42 +85,44 @@
               <th>{{ $t("orders.confirm.header.shippingCost") }}</th>
               <td>{{ toCurrency(order.shippingCost) }}</td>
             </tr>
-            <tr>
-              <th>{{ $t("orders.confirm.header.payed") }}</th>
-              <td>{{ toCurrency(order.payed) }}</td>
-            </tr>
+          
             <tr>
               <th>{{ $t("orders.confirm.header.trackingNumber") }}</th>
               <td>
                 <span v-if="order.trackingNumber">{{ order.trackingNumber }}</span>
-                <span v-else>None</span>
+                <span v-else></span>
               </td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.expiredAt") }}</th>
               <td>
                 <span v-if="order.expiredAt">{{ getDate(order.expiredAt) }}</span>
-                <span v-else>None</span>
+                <span v-else></span>
               </td>
+            </tr>
+            <tr>
+              <th>{{ $t("orders.confirm.header.payed") }}</th>
+              <td style="font-weight: bolder;">{{ toCurrency(order.payed) }}</td>
             </tr>
             <tr v-if="order.status != 'cancel' && order.status != 'done'">
               <th>{{ $t("orders.confirm.header.action") }}</th>
               <td>
-                <vs-button type="relief" color="success" @click="confirm" v-if="order.status == 'waitingSellerConfirmation'">
-                  <vs-icon icon="check"></vs-icon>
-                  Confirm
+                <vs-button type="relief" color="success" @click="done" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
+                  <!-- <vs-icon icon="check"></vs-icon> -->
+                  <vs-icon icon="done_all"></vs-icon>
+                  Potvrdi da je plaćeno
                 </vs-button>
                 <vs-button type="relief" color="danger" @click="openCancelDialog" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
                   <vs-icon icon="clear"></vs-icon>
-                  Reject
+                  Odbij narudžbu
                 </vs-button>
                 <vs-button type="relief" color="primary" v-if="order.status == 'process'" @click="openTrackingNumber">
                   <vs-icon icon="local_shipping"></vs-icon>
-                  Add Tracking Number
+                 Dodaj Broj (šifru)
                 </vs-button>
                 <vs-button type="relief" color="dark" v-if="order.status == 'delivering'" @click="done">
                   <vs-icon icon="done_all"></vs-icon>
-                  Done
+                Završena narudžba 
                 </vs-button>
               </td>
             </tr>
@@ -136,7 +137,7 @@
             <h3>{{ $t("orders.confirm.title.orderPayment") }}</h3>
           </div>
           <table class="skijasi-table">
-            <tr>
+            <!-- <tr>
               <th>{{ $t("orders.confirm.header.orderPayment.sourceBank") }}</th>
               <td>{{ getSourceBank(order.orderPayment.sourceBank) }}</td>
             </tr>
@@ -147,7 +148,7 @@
             <tr>
               <th>{{ $t("orders.confirm.header.orderPayment.accountNumber") }}</th>
               <td>{{ order.orderPayment.accountNumber }}</td>
-            </tr>
+            </tr> -->
             <tr>
               <th>{{ $t("orders.confirm.header.orderPayment.totalTransfer") }}</th>
               <td>{{ toCurrency(order.orderPayment.totalTransfered) }}</td>
@@ -156,7 +157,7 @@
               <th>{{ $t("orders.confirm.header.orderPayment.proofOfTransaction") }}</th>
               <td>
                 <img class="w-100" :src="order.orderPayment.proofOfTransaction" alt="" v-if="order.orderPayment.proofOfTransaction">
-                <span v-else>None</span>
+                <span v-else>Nema</span>
               </td>
             </tr>
           </table>
@@ -249,13 +250,14 @@ export default {
   },
   methods: {
     toCurrency(value) {
-      return currency(value, {
-        precision: this.$store.state.skijasi.config.currencyPrecision,
-        decimal: this.$store.state.skijasi.config.currencyDecimal,
-        separator: this.$store.state.skijasi.config.currencySeparator,
-        symbol: this.$store.state.skijasi.config.currencySymbol,
-      }).format()
-    },
+    return currency(value, {
+      precision: this.$store.state.skijasi.config.currencyPrecision,
+      decimal: this.$store.state.skijasi.config.currencyDecimal,
+      separator: this.$store.state.skijasi.config.currencySeparator,
+      symbol: this.$store.state.skijasi.config.currencySymbol,
+      format: (value, options) => `${value} ${options.symbol}`
+    }).format()
+  },
     getDate(date) {
       return moment(date).format("dddd, DD MMMM YYYY HH:mm:ss");
     },
@@ -360,6 +362,10 @@ export default {
           });
         });
     },
+
+
+
+    
     openTrackingNumber() {
       this.trackingNumberDialog = true
     },

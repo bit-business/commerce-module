@@ -19,4 +19,10 @@ export default {
     let url = ep + qs;
     return resource.get(url);
   },
+  delete(data) {
+    let paramData = {
+      data: data,
+    };
+    return resource.delete(apiPrefix + "/v1/cart/delete", paramData);
+  },
 };

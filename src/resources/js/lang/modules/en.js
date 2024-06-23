@@ -486,7 +486,7 @@ export default {
   },
   cart: {
     browse: {
-      title: "User Cart",
+      title: "Zaduženja/Košarica",
       header: {
         id: "ID",
         name: "User Name & Email",

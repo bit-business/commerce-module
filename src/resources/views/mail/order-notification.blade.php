@@ -162,7 +162,7 @@
         style="font-family: sans-serif; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 580px; padding: 10px; width: 580px;">
         <div style="text-align: center;"><img
             src="{{ Storage::url('photos/shares/logo-144px.png') }}"
-            width="25%" alt="Logo Skijasi"></div>
+            width="25%" alt="Logo HZUTS"></div>
         <div class="content"
           style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 580px; padding: 10px;">
 
@@ -176,10 +176,10 @@
                   <tr>
                     <td>
                         <h1>{{$title}}</h1>
-                      <p>Hi {{$user->username}},</p>
+                      <p>Poštovani {{$user->username}},</p>
                       <p>{{$content}}</p>
 
-                      <p>Regards,<br />{{ config('app.name') }}</p>
+                      <p>S poštovanjem,<br />HZUTS</p>
                     </td>
                   </tr>
                 </table>

@@ -14,7 +14,7 @@ class PaymentOption extends Model
     public function __construct(array $attributes = [])
     {
         $prefix = config('skijasi.database.prefix');
-        $this->table = $prefix.'payment_type_options';
+        $this->table = 'skijasi_payment_type_options';
         parent::__construct($attributes);
     }
 

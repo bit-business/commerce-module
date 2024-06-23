@@ -25,25 +25,89 @@ class CartController extends Controller
         }
     }
 
+
+    public function addplacanja(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail,id', 
+                'userid' => 'required',
+                'quantity' => 'required|min:0|integer',
+                'userstatus' => 'string'
+            ], [
+                'id.required' => 'You have to select one of the variants!',
+            ]);
+    
+         
+        $product_detail = ProductDetail::where('id', $request->id)
+        ->where('name', $request->userstatus)
+        ->first();
+    
+            if (!$product_detail) {
+                return ApiResponse::failed('Product detail not found!');
+            }
+    
+            if ($product_detail->quantity <= 0) {
+                return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
+            }
+    
+            $cart = Cart::where('user_id', $request->userid)->where('product_detail_id', $request->id)->first();
+    
+            if (empty($cart)) {
+                Cart::create([
+                    'product_detail_id' => $request->id,
+                    'user_id' => $request->userid,
+                    'quantity' => $request->quantity,
+                ]);
+            } else {
+                if ($cart->quantity + $request->quantity > $product_detail->quantity) {
+                    return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
+                }
+    
+                Cart::where('user_id', $request->userid)->where('product_detail_id', $request->id)->update([
+                    'product_detail_id' => $request->id,
+                    'user_id' => $request->userid,
+                    'quantity' => $cart->quantity,
+                    // Uncomment this line if you want to increase the quantity
+                    // 'quantity' => $cart->quantity + $request->quantity,
+                ]);
+            }
+    
+            DB::commit();
+    
+            return ApiResponse::success();
+        } catch (Exception $e) {
+            DB::rollback();
+    
+            return ApiResponse::failed($e);
+        }
+    }
+
+
     public function add(Request $request)
     {
         DB::beginTransaction();
         try {
             $request->validate([
-                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail',
+                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail,id', // Ensure 'id' is a valid 'ProductDetail' id
                 'quantity' => 'required|min:0|integer',
             ], [
-                'id.required' => 'You have to select one of the variant!',
+                'id.required' => 'You have to select one of the variants!',
             ]);
-
+    
             $product_detail = ProductDetail::where('id', $request->id)->first();
-
+    
+            if (!$product_detail) {
+                return ApiResponse::failed('Product detail not found!');
+            }
+    
             if ($product_detail->quantity <= 0) {
                 return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
             }
-
+    
             $cart = Cart::where('user_id', auth()->id())->where('product_detail_id', $request->id)->first();
-
+    
             if (empty($cart)) {
                 Cart::create([
                     'product_detail_id' => $request->id,
@@ -54,24 +118,26 @@ class CartController extends Controller
                 if ($cart->quantity + $request->quantity > $product_detail->quantity) {
                     return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
                 }
-
+    
                 Cart::where('user_id', auth()->id())->where('product_detail_id', $request->id)->update([
                     'product_detail_id' => $request->id,
                     'user_id' => auth()->id(),
-                    'quantity' => $cart->quantity + $request->quantity,
+                    'quantity' => $cart->quantity,
+                    // Uncomment this line if you want to increase the quantity
+                    // 'quantity' => $cart->quantity + $request->quantity,
                 ]);
             }
-
+    
             DB::commit();
-
+    
             return ApiResponse::success();
         } catch (Exception $e) {
             DB::rollback();
-
+    
             return ApiResponse::failed($e);
         }
     }
-
+    
     public function edit(Request $request)
     {
         DB::beginTransaction();

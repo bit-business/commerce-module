@@ -24,23 +24,35 @@
               @select="handleSelect"
               @sort="handleSort"
             >
-              <template slot="thead">
+              <template slot="thead" style="text-align: center;">
+                <vs-th> </vs-th>
                 <skijasi-th sort-key="id"> {{ $t("cart.browse.header.id") }} </skijasi-th>
                 <skijasi-th sort-key="name"> {{ $t("cart.browse.header.name") }} </skijasi-th>
                 <skijasi-th sort-key="productName"> {{ $t("cart.browse.header.productName") }} </skijasi-th>
                 <skijasi-th sort-key="quantity"> {{ $t("cart.browse.header.quantity") }} </skijasi-th>
                 <skijasi-th sort-key="createdAt"> {{ $t("cart.browse.header.createdAt") }} </skijasi-th>
                 <skijasi-th sort-key="updatedAt"> {{ $t("cart.browse.header.updatedAt") }} </skijasi-th>
-                <vs-th> {{ $t("cart.browse.header.action") }} </vs-th>
+           
               </template>
 
               <template slot="tbody">
-                <vs-tr :data="cart" :key="index" v-for="(cart, index) in carts.data">
+                <vs-tr :data="cart" :key="index" v-for="(cart, index) in carts.data" style="text-align: center;">
+                  <vs-td class="skijasi-table__td">
+                    <vs-button
+                        size="large"
+                        icon="visibility"
+                          :to="{
+                            name: 'CartRead',
+                            params: { id: cart.id },
+                          }"
+                          v-if="$helper.isAllowed('read_carts')"
+                      >Detalji</vs-button>
+                  </vs-td>
                   <vs-td :data="cart.id">
                     {{cart.id }}
                   </vs-td>
                   <vs-td :data="cart.user.name">
-                    {{ `${cart.user.name} - ${cart.user.email}` }}
+                    {{ `${cart.user.name} ${cart.user.username} --- ${cart.user.email}` }}
                   </vs-td>
                   <vs-td :data="cart.productDetail.product.name">
                     {{ `${cart.productDetail.product.name} - ${cart.productDetail.name}` }}
@@ -55,25 +67,13 @@
                     {{ getDate(cart.updatedAt) }}
                   </vs-td>
                   <vs-td class="skijasi-table__td">
-                    <skijasi-dropdown vs-trigger-click>
                       <vs-button
-                        size="large"
-                        type="flat"
-                        icon="more_vert"
-                      ></vs-button>
-                      <vs-dropdown-menu>
-                        <skijasi-dropdown-item
-                          icon="visibility"
-                          :to="{
-                            name: 'CartRead',
-                            params: { id: cart.id },
-                          }"
-                          v-if="$helper.isAllowed('read_carts')"
-                        >
-                          Detail
-                        </skijasi-dropdown-item>
-                      </vs-dropdown-menu>
-                    </skijasi-dropdown>
+    size="large"
+    color="danger"
+    icon="delete"
+    @click="confirmDelete(cart.id)"
+    v-if="$helper.isAllowed('delete_carts')"
+  >Izbriši</vs-button>
                   </vs-td>
                 </vs-tr>
               </template>
@@ -152,6 +152,46 @@ export default {
     handleSelect(data) {
       this.selected = data;
     },
+
+
+    
+
+    confirmDelete(cartId) {
+    this.$vs.dialog({
+      type: 'confirm',
+      color: 'danger',
+      title: 'Brisanje Zaduženja',
+      text: 'Da li ste sigurni da želite obrisati? Ne bi trebalo brisati osim u slučaju ako je greškom dodano ili je član platio.',
+      acceptText: 'Potvrdi brisanje',
+      cancelText: 'Odustani',
+      accept: () => this.deleteCart(cartId)
+    })
+  },
+
+  deleteCart(cartId) {
+    this.$openLoader();
+    this.$api.skijasiCart.delete({ id: cartId })
+      .then((response) => {
+        this.$closeLoader();
+        this.$vs.notify({
+          title: this.$t('alert.success'),
+          text: this.$t('cart.browse.deleteSuccess'),
+          color: 'success'
+        });
+        this.getCartList();
+      })
+      .catch((error) => {
+        this.$closeLoader();
+        this.$vs.notify({
+          title: this.$t('alert.danger'),
+          text: error.message,
+          color: 'danger'
+        });
+      });
+  },
+
+
+
   },
 };
 </script>

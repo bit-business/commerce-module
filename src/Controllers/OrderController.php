@@ -14,6 +14,8 @@ use NadzorServera\Skijasi\Module\Commerce\Models\Order;
 use NadzorServera\Skijasi\Module\Commerce\Models\OrderDetail;
 use NadzorServera\Skijasi\Module\Commerce\Models\OrderPayment;
 
+use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
+
 class OrderController extends Controller
 {
     public function browse(Request $request)
@@ -201,6 +203,19 @@ class OrderController extends Controller
         }
     }
 
+    public function deleteCartItems($orderId)
+{
+    $orderDetails = OrderDetail::where('order_id', $orderId)->get();
+    
+    foreach ($orderDetails as $orderDetail) {
+        $cartItems = Cart::where('product_detail_id', $orderDetail->product_detail_id)->get();
+        foreach ($cartItems as $cartItem) {
+            $cartItem->delete();
+        }
+    }
+}
+
+
     public function done(Request $request)
     {
         try {
@@ -209,16 +224,19 @@ class OrderController extends Controller
             ]);
 
             $order = Order::find($request->id);
-            if ($order->status = 'delivering') {
+          //  if ($order->status = 'delivering') {
                 $order->status = 'done';
                 $order->save();
+
+
+                $this->deleteCartItems($order->id);
 
                 event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'done'));
 
                 return ApiResponse::success();
-            }
+          //  }
 
-            return ApiResponse::failed();
+          //  return ApiResponse::failed();
         } catch (Exception $e) {
             return ApiResponse::failed($e);
         }

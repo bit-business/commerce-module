@@ -75,7 +75,9 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::group(['prefix' => 'public'], function () {
                 Route::get('/', HelperRoute::getController('PublicController\PaymentController@browse'));
                 Route::get('/read', HelperRoute::getController('PublicController\PaymentController@read'));
+                    
             });
+           
         });
 
         Route::group(['prefix' => 'order', 'middleware' => [SkijasiAuthenticate::class]], function () {
@@ -85,11 +87,14 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::post('/reject', HelperRoute::getController('OrderController@reject'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
             Route::post('/ship', HelperRoute::getController('OrderController@ship'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
             Route::post('/done', HelperRoute::getController('OrderController@done'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
+
         });
 
         Route::group(['prefix' => 'cart'], function () {
             Route::get('/', HelperRoute::getController('CartController@browse'))->middleware(SkijasiCheckPermissions::class.':browse_carts');
             Route::get('/read', HelperRoute::getController('CartController@read'))->middleware(SkijasiCheckPermissions::class.':read_carts');
+            Route::delete('/delete', HelperRoute::getController('CartController@delete'));
+
         });
 
         Route::group(['prefix' => 'user-address'], function () {
@@ -121,6 +126,7 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
         Route::group(['prefix' => 'cart/public', 'middleware' => [SkijasiAuthenticate::class]], function () {
             Route::get('/', HelperRoute::getController('PublicController\CartController@browse'));
             Route::post('/add', HelperRoute::getController('PublicController\CartController@add'));
+            Route::post('/addplacanja', HelperRoute::getController('PublicController\CartController@addplacanja'));
             Route::put('/edit', HelperRoute::getController('PublicController\CartController@edit'));
             Route::put('/edit-cart', HelperRoute::getController('PublicController\CartController@editCart'));
             Route::delete('/delete', HelperRoute::getController('PublicController\CartController@delete'));
@@ -132,6 +138,10 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::get('/read', HelperRoute::getController('PublicController\OrderController@read'));
             Route::post('/pay', HelperRoute::getController('PublicController\OrderController@pay'));
             Route::post('/finish', HelperRoute::getController('PublicController\OrderController@finish'));
+
+                //uplatnice
+                Route::post('/stvoriuplatnicu', HelperRoute::getController('PublicController\OrderController@stvoriuplatnicu'));
+
         });
 
         Route::group(['prefix' => 'review/public'], function () {

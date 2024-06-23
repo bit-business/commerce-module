@@ -151,12 +151,15 @@ export default {
   },
   methods: {
     toCurrency(value) {
-      return currency(value, {
-        precision: this.$store.state.skijasi.config.currencyPrecision,
-        decimal: this.$store.state.skijasi.config.currencyDecimal,
-        separator: this.$store.state.skijasi.config.currencySeparator,
-        symbol: this.$store.state.skijasi.config.currencySymbol,
-      }).format()
+    const formattedValue = currency(value, {
+      precision: this.$store.state.skijasi.config.currencyPrecision,
+      decimal: this.$store.state.skijasi.config.currencyDecimal,
+      separator: this.$store.state.skijasi.config.currencySeparator,
+      symbol: '', // Set symbol to empty string
+    }).formatWithoutSymbol();
+
+    // Append the currency symbol to the right side
+    return `${formattedValue} ${this.$store.state.skijasi.config.currencySymbol}`;
     },
     getDate(date) {
       return moment(date).format('DD MMMM YYYY')

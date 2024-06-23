@@ -13,6 +13,37 @@ class UploadImage
 {
 
 
+    public static function createImagePotvrda($base64, $path = '')
+    {
+        // base 64 format file : data:image/jpeg;base64,/9j/4AA....
+
+        try {
+            $file_parts = explode(';base64,', $base64);
+            if (count($file_parts) < 2) {
+                return null; // Not a valid data URL
+            }
+    
+            $file_type_aux = explode('/', $file_parts[0]);
+            $file_type = end($file_type_aux);  
+            $file_base64 = base64_decode($file_parts[1]);
+            $orderid = 123;
+
+            $file ='uplatnice/potvrde/' . $orderid . '.' . $file_type;
+
+            if (Storage::put($file, $file_base64)) {
+                return $file;
+            } else {
+                return null;
+            }
+
+            return $file;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+
+
     public static function createImage($base64, $name, $username)
     {
         try {
@@ -23,10 +54,9 @@ class UploadImage
     
             $file_type_aux = explode('/', $file_parts[0]);
             $file_type = end($file_type_aux);  // This will get the actual type of the file
-            \Log::info("File type: $file_type"); // Log the file type
     
             $file_base64 = base64_decode($file_parts[1]);
-            \Log::info("Decoded data length: " . strlen($file_base64)); // Log the length of decoded data
+
     
             // Construct the storage path
             $file ='profilephoto/korisnik/' . $name . '_' . $username . '_' . '.' . $file_type;

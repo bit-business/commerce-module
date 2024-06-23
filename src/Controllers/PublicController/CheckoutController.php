@@ -14,6 +14,7 @@ class CheckoutController extends Controller implements SkijasiPayment
 
     public function pay(Request $request)
     {
+        
     }
 
     /**
