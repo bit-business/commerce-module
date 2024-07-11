@@ -138,6 +138,9 @@ class OrderController extends Controller
         }
     }
 
+    
+
+
     public function finish(Request $request)
     {
         DB::beginTransaction();
@@ -146,15 +149,15 @@ class OrderController extends Controller
                 'items' => 'required|array',
                 'items.*.id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
                 'items.*.quantity' => 'required|integer|min:1',
-                'user_address_id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\UserAddress,id',
+                // 'user_address_id' => 'exists:NadzorServera\Skijasi\Module\Commerce\Models\UserAddress,id',
                 'payment_type_option_id' => 'string|max:255|exists:NadzorServera\Skijasi\Module\Commerce\Models\PaymentOption,id',
                 'message' => 'nullable|string',
             ]);
     
-            $user_address = UserAddress::select('recipient_name', 'address_line1', 'address_line2', 'city', 'postal_code', 'country', 'phone_number')
-                ->where('id', $request->user_address_id)
-                ->where('user_id', auth()->user()->id)
-                ->firstOrFail();
+            // $user_address = UserAddress::select('recipient_name', 'address_line1', 'address_line2', 'city', 'postal_code', 'country', 'phone_number')
+            // ->where('id', $request->user_address_id)
+            // ->where('user_id', auth()->user()->id)
+            // ->firstOrFail();
     
             $itemIds = array_column($request->items, 'id');
     
@@ -174,6 +177,8 @@ class OrderController extends Controller
     
             foreach ($request->items as $item) {
                 $cart = Cart::find($item['id']);
+                $cart->cekapotvrdu = 1; // Set 'cekapotvrdu' to 1
+                $cart->save();
                 $product_detail = ProductDetail::with('discount')->findOrFail($cart->product_detail_id);
     
                 if ($item['quantity'] > $product_detail->quantity) {
@@ -212,6 +217,8 @@ class OrderController extends Controller
     
                 foreach ($request->items as $item) {
                     $cart = Cart::find($item['id']);
+                    $cart->cekapotvrdu = 1; // Set 'cekapotvrdu' to 1
+                    $cart->save();
                     $product_detail = ProductDetail::findOrFail($cart->product_detail_id);
                     $discount = null;
                     $discounted = 0;
@@ -250,6 +257,7 @@ class OrderController extends Controller
                             'quantity' => $item['quantity'],
                         ]);
                     }
+                    
     
                     $product_detail->quantity -= $item['quantity'];
                     $product_detail->save();
@@ -257,8 +265,13 @@ class OrderController extends Controller
     
                 // Delete cart items
                // $this->deleteCartItems($existingOrder->id);
-    
-                event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment'));
+
+                     // Generate the payment slip PDF
+            $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
+            $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
+      
+            event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment', $pdfPath));
+   
     
                 DB::commit();
     
@@ -266,7 +279,7 @@ class OrderController extends Controller
             }
     
             // Create new order
-            $order_replicated = $user_address->replicate(['id'])->toArray();
+            // $order_replicated = $user_address->replicate(['id'])->toArray();
     
             $order = Order::create([
                 'user_id' => auth()->user()->id,
@@ -281,9 +294,9 @@ class OrderController extends Controller
                 'message' => $request->message,
             ]);
     
-            OrderAddress::create(array_merge([
-                'order_id' => $order->id,
-            ], $order_replicated));
+            // OrderAddress::create(array_merge([
+            //     'order_id' => $order->id,
+            // ], $order_replicated));
     
             OrderPayment::create([
                 'order_id' => $order->id,
@@ -323,7 +336,11 @@ class OrderController extends Controller
             // Delete cart items
           //  $this->deleteCartItems($order->id);
     
-            event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment'));
+      
+            $paymentSlipData = $this->generatePaymentSlipData($order);
+            $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
+       
+            event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment', $pdfPath));
     
             DB::commit();
     
@@ -395,6 +412,9 @@ class OrderController extends Controller
                 DB::commit();
     
                 Log::info('Transaction committed'); // Log the successful commit
+
+
+                
     
                 return ApiResponse::success();
             // } else {
@@ -409,44 +429,111 @@ class OrderController extends Controller
         }
     }
 
+    private function generatePaymentSlipData($order)
+    {
+        $user = auth()->user();
+    
+        // Calculate the total amount
+        $amount = number_format($order->payed, 0, '', '') . '00'; // Add '00' to match the frontend format
+
+           // Check if user idmember is empty and format datumrodjenja if necessary
+    $poziv_na_broj_primatelja = (string)$user->idmember;
+    if (empty($poziv_na_broj_primatelja)) {
+        $datumrodjenja = new \DateTime($user->datumrodjenja);
+        $poziv_na_broj_primatelja = $datumrodjenja->format('dmY');
+    }
+    
+        // Concatenate product names
+        $productNames = $this->getProductNames($order);
+    
+        // Create the payment slip data array
+        return [
+            "poziv_na_broj_platitelja" => "",
+            "poziv_na_broj_primatelja" => $poziv_na_broj_primatelja, // User ID as a string
+            "iznos" => $amount, // Ensure this matches the frontend format
+            "iban_primatelja" => "HR7423600001101359833",
+            "iban_platitelja" => "",
+            "model_primatelja" => "HR07",
+            "model_platitelja" => "",
+            "sifra_namjene" => "",
+            "datum_izvrsenja" => "",
+            "valuta_placanja" => "EUR",
+            "ime_i_prezime_platitelja" => $user->name . " " . $user->username,
+            "ulica_i_broj_platitelja" => $user->adresa, // Default address
+            "postanski_i_grad_platitelja" => $user->grad, // Default city
+            "naziv_primatelja" => "Hrvatski zbor učitelja i trenera sportova na snijegu(HZUTS)",
+            "ulica_i_broj_primatelja" => "Maksimirska 51a",
+            "postanski_i_grad_primatelja" => "10 000 Zagreb,Hrvatska",
+            "opis_placanja" => $productNames . ", " . $user->name . " " . $user->username
+        ];
+    }
+    
+    private function getProductNames($order)
+    {
+        return $order->orderDetails->map(function ($orderDetail) {
+            return $orderDetail->productDetail->product->name;
+        })->join(', ');
+    }
+    
+
+private function stvoriuplatnicu2($paymentSlipData, $orderId)
+{
+    $transactionUniqueCode = $orderId;
+    $paymentSlipPdf = $this->runPythonScript(json_encode($paymentSlipData));
+
+
+
+    if ($paymentSlipPdf === null || empty($paymentSlipPdf)) {
+        Log::error("PDF creation failed or empty");
+        return null;
+    }
+
+    $filename = "pdf-" . $transactionUniqueCode . ".pdf";
+    $filePath = storage_path('app/public/uplatnice/' . $filename);
+
+    file_put_contents($filePath, $paymentSlipPdf);
+
+    return $filePath;
+}
 
 
     //dodano za uplatnice pocetak 
 // Controller method to generate and store PDF file
-            public function stvoriuplatnicu(Request $request)
-            {
-                try {
-                    $paymentSlipData = $request->input('paymentSlipData');
-                    $transactionUniqueCode = $request->input('transactionUniqueCode'); // Get transactionUniqueCode from request
 
-                    Log::info("Received paymentSlipData: " . $paymentSlipData);
 
-                    // Call the Python script and get the generated PDF
-                    $paymentSlipPdf = $this->runPythonScript($paymentSlipData);
+public function stvoriuplatnicu(Request $request)
+{
+    try {
+        $paymentSlipData = $request->input('paymentSlipData');
+        $transactionUniqueCode = $request->input('transactionUniqueCode'); // Get transactionUniqueCode from request
 
-                    if ($paymentSlipPdf === null || empty($paymentSlipPdf)) {
-                        Log::error("PDF creation failed or empty");
-                        return response("PDF creation failed", 500);
-                    }
+        Log::info("Received paymentSlipData: " . $paymentSlipData);
 
-                    // Generate a unique filename for the PDF based on transactionUniqueCode
-                    $filename = "pdf-" . $transactionUniqueCode . ".pdf";
-                    $filePath = storage_path('app/public/uplatnice/' . $filename); // Adjust the storage path as needed
+        // Call the Python script and get the generated PDF
+        $paymentSlipPdf = $this->runPythonScript($paymentSlipData);
 
-                    // Store the PDF file
-                    file_put_contents($filePath, $paymentSlipPdf);
+        if ($paymentSlipPdf === null || empty($paymentSlipPdf)) {
+            Log::error("PDF creation failed or empty");
+            return response("PDF creation failed", 500);
+        }
 
-                    // Return the URL or file path to the stored PDF
-                    return response()->json([
-                        'pdfUrl' => asset('storage/uplatnice/' . $filename) // Example: '/storage/pdf-transactionUniqueCode.pdf'
-                    ]);
+        // Generate a unique filename for the PDF based on transactionUniqueCode
+        $filename = "pdf-" . $transactionUniqueCode . ".pdf";
+        $filePath = storage_path('app/public/uplatnice/' . $filename); // Adjust the storage path as needed
 
-                } catch (Exception $e) {
-                    Log::error("Exception occurred: " . $e->getMessage());
-                    return response("Internal Server Error", 500);
-                }
-            }
+        // Store the PDF file
+        file_put_contents($filePath, $paymentSlipPdf);
 
+        // Return the URL or file path to the stored PDF
+        return response()->json([
+            'pdfUrl' => asset('storage/uplatnice/' . $filename) // Example: '/storage/pdf-transactionUniqueCode.pdf'
+        ]);
+
+    } catch (Exception $e) {
+        Log::error("Exception occurred: " . $e->getMessage());
+        return response("Internal Server Error", 500);
+    }
+}
     
     private function runPythonScript($paymentSlipData)
     {

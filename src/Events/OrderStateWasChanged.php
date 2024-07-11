@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use NadzorServera\Skijasi\Models\User;
 use NadzorServera\Skijasi\Module\Commerce\Models\Order;
 
+
 class OrderStateWasChanged
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
@@ -15,16 +16,13 @@ class OrderStateWasChanged
     public $user;
     public $order;
     public $status;
+    public $pdfPath;
 
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-    public function __construct(User $user, Order $order, string $status)
+    public function __construct(User $user, Order $order, string $status, ?string $pdfPath = null)
     {
         $this->user = $user;
         $this->order = $order;
         $this->status = $status;
+        $this->pdfPath = $pdfPath;
     }
 }

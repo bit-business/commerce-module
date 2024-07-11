@@ -56,7 +56,7 @@
                 <skijasi-th sort-key="category"> {{ $t("product.browse.header.productCategoryId") }} </skijasi-th>
                 <skijasi-th sort-key="createdAt"> {{ $t("product.browse.header.createdAt") }} </skijasi-th>
                 <skijasi-th sort-key="updatedAt"> {{ $t("product.browse.header.updatedAt") }} </skijasi-th>
-                <vs-th> {{ $t("product.browse.header.action") }} </vs-th>
+                <vs-th> Opcije </vs-th>
               </template>
 
               <template slot="tbody">
@@ -80,14 +80,10 @@
                     {{ getDate(product.updatedAt) }}
                   </vs-td>
                   <vs-td style="width: 1%; white-space: nowrap">
-                    <skijasi-dropdown vs-trigger-click>
-                      <vs-button
-                        size="large"
-                        type="flat"
-                        icon="more_vert"
-                      ></vs-button>
-                      <vs-dropdown-menu>
-                        <skijasi-dropdown-item
+             
+                      
+                        <vs-button
+                   class="button-spacing"
                           icon="visibility"
                           :to="{
                             name: 'ProductRead',
@@ -95,9 +91,9 @@
                           }"
                           v-if="$helper.isAllowed('read_products')"
                         >
-                          Detail
-                        </skijasi-dropdown-item>
-                        <skijasi-dropdown-item
+                        </vs-button>
+                        <vs-button
+                           class="button-spacing"
                           icon="edit"
                           :to="{
                             name: 'ProductEdit',
@@ -105,17 +101,16 @@
                           }"
                           v-if="$helper.isAllowed('edit_products')"
                         >
-                          Edit
-                        </skijasi-dropdown-item>
-                        <skijasi-dropdown-item
+                        </vs-button>
+                        <vs-button
+                        class="button-spacing"
                           icon="delete"
                           @click="confirmDelete(product.id)"
                           v-if="$helper.isAllowed('delete_products')"
                         >
-                          Delete
-                        </skijasi-dropdown-item>
-                      </vs-dropdown-menu>
-                    </skijasi-dropdown>
+                        
+                      </vs-button>
+                   
                   </vs-td>
                 </vs-tr>
               </template>
@@ -261,3 +256,10 @@ export default {
   },
 };
 </script>
+
+
+<style scoped>
+.button-spacing:not(:last-child) {
+  margin-bottom: 5px; 
+}
+</style>

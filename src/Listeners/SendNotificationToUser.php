@@ -8,6 +8,8 @@ use NadzorServera\Skijasi\Models\User;
 use NadzorServera\Skijasi\Module\Commerce\Events\OrderStateWasChanged;
 use NadzorServera\Skijasi\Module\Commerce\Mail\MailNotificationOrder;
 
+use Illuminate\Support\Facades\Log;
+
 class SendNotificationToUser
 {
     /**
@@ -29,36 +31,52 @@ class SendNotificationToUser
         $content = null;
         $is_read = 0;
 
+        
+
         switch ($status) {
             case 'waitingBuyerPayment':
                 $title = 'Uspješno ste napravili narudžbu';
-                $content = "Čestitamo broj Vaše narudžbe je: #{$event->order->id}. Podaci za plaćanje su ispod:";
+                $content = "Čestitamo broj Vaše narudžbe je: {$event->order->id}. Podaci za plaćanje su na uplatnici u prilogu.\n"
+                    . "\nMoguće je uplatiti:\n"
+                    . "\n1. Internet bankarstvom\n"
+                    . "2. Skeniranjem koda na uplatnici mobilnim bankarstvom\n"
+                    . "3. Uplatnicom u poslovnici banke ili pošte\n\n"
+                    . "Prije plaćanja molimo provjerite da li su ispravni podaci.";
                 break;
             case 'waitingSellerConfirmation':
                 $title = 'Čeka se potvrda plaćanja';
-                $content = "Čestitamo broj Vaše narudžbe je:  #{$event->order->id}. Provjeravamo Vašu uplatu, te ćemo Vam ubrzo javiti čim potvrdimo uplatu.";
+                $content = "Čestitamo broj Vaše narudžbe je: {$event->order->id}. Provjeravamo Vašu uplatu, te ćemo Vam se ubrzo javiti čim potvrdimo uplatu.";
                 break;
             case 'process':
                 $title = 'Vaša kupnja je u obradi';
-                $content = "Vaša narudžba sa brojem #{$event->order->id} je u obradi. ";
+                $content = "Vaša narudžba sa brojem: {$event->order->id} je u obradi. ";
                 break;
             case 'delivering':
                 $title = 'Informacije o vašoj narudžbi';
-                $content = "Imamo poruku vezanu za vašu narudžbu broj #{$event->order->id}. ";
+                $content = "Imamo poruku vezanu za vašu narudžbu broj: {$event->order->id}. ";
                 break;
             case 'done':
                 $title = 'Vaša kupnja je potvrđena';
-                $content = "Vaša narudžba na HZUTS web stranici pod brojem #{$event->order->id} je upješno potvrđena. Hvala Vam na kupnji!";
+                $content = "Vaša narudžba na HZUTS web stranici pod brojem: {$event->order->id} je upješno potvrđena. Hvala Vam na kupnji!";
                 break;
             case 'cancel':
                 $title = 'Narudžba je odbijena';
-                $content = "Vaša narudžba broj #{$event->order->id} je odbijena. Ukoliko mislite da je ovo greška, molimo Vas kontaktirajte nas.";
+                $content = "Vaša narudžba broj: {$event->order->id} je odbijena. {$event->order->cancel_message} Ukoliko mislite da je ovo greška, molimo Vas kontaktirajte nas.";
                 break;
             default:
                 return;
         }
 
-        Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content));
+  
+            if ($status === 'waitingBuyerPayment' && $event->pdfPath) {
+              
+                Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content, $event->pdfPath));
+              
+            } else {
+                Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content));
+            }
+
+
         Notification::create([
             'receiver_user_id' => $event->user->id,
             'type' => 'orderNotification',

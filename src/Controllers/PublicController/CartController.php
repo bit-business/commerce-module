@@ -34,7 +34,8 @@ class CartController extends Controller
                 'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail,id', 
                 'userid' => 'required',
                 'quantity' => 'required|min:0|integer',
-                'userstatus' => 'string'
+                'userstatus' => 'string',
+                'tblpaymentsid' => 'nullable|integer', 
             ], [
                 'id.required' => 'You have to select one of the variants!',
             ]);
@@ -55,23 +56,36 @@ class CartController extends Controller
             $cart = Cart::where('user_id', $request->userid)->where('product_detail_id', $request->id)->first();
     
             if (empty($cart)) {
-                Cart::create([
+                $cartData = [
                     'product_detail_id' => $request->id,
                     'user_id' => $request->userid,
                     'quantity' => $request->quantity,
-                ]);
+                ];
+            
+                if ($request->has('tblpaymentsid')) {
+                    $cartData['tblpaymentsid'] = $request->tblpaymentsid;
+                }
+            
+                Cart::create($cartData);
+            
             } else {
                 if ($cart->quantity + $request->quantity > $product_detail->quantity) {
                     return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
                 }
-    
-                Cart::where('user_id', $request->userid)->where('product_detail_id', $request->id)->update([
+                
+                $updateData = [
                     'product_detail_id' => $request->id,
                     'user_id' => $request->userid,
                     'quantity' => $cart->quantity,
-                    // Uncomment this line if you want to increase the quantity
-                    // 'quantity' => $cart->quantity + $request->quantity,
-                ]);
+                ];
+            
+                if ($request->has('tblpaymentsid')) {
+                    $updateData['tblpaymentsid'] = $request->tblpaymentsid;
+                }
+            
+                Cart::where('user_id', $request->userid)
+                    ->where('product_detail_id', $request->id)
+                    ->update($updateData);
             }
     
             DB::commit();
@@ -83,6 +97,9 @@ class CartController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+
+    
 
 
     public function add(Request $request)
@@ -246,4 +263,14 @@ class CartController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+      public function getTotalCartItems(Request $request)
+            {
+                try {
+                    $totalItems = Cart::sum('quantity');
+                    return ApiResponse::success(['total_items' => $totalItems]);
+                } catch (Exception $e) {
+                    return ApiResponse::failed($e);
+                }
+            }
 }

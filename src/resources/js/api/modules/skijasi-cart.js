@@ -25,4 +25,10 @@ export default {
     };
     return resource.delete(apiPrefix + "/v1/cart/delete", paramData);
   },
+
+  edit(data) {
+    return resource.put(apiPrefix + "/v1/cart/edit", data);
+  },
+
+
 };

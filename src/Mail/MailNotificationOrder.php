@@ -9,29 +9,37 @@ use Illuminate\Queue\SerializesModels;
 class MailNotificationOrder extends Mailable
 {
     use Queueable, SerializesModels;
+
     public $user;
     public $title;
     public $content;
+    public $pdfPath;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
-    public function __construct($user, $title, $content)
+    public function __construct($user, $title, $content, $pdfPath = null)
     {
         $this->user = $user;
         $this->title = $title;
         $this->content = $content;
+        $this->pdfPath = $pdfPath;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
     public function build()
     {
-        return $this->view('skijasi_commerce::mail.order-notification');
+        $mail = $this->subject($this->title)
+            ->view('skijasi_commerce::mail.order-notification')
+            ->with([
+                'user' => $this->user,
+                'title' => $this->title,
+                'content' => $this->content,
+            ]);
+
+        if ($this->pdfPath && file_exists($this->pdfPath)) {
+            $mail->attach($this->pdfPath, [
+                'as' => 'uplatnica.pdf',
+                'mime' => 'application/pdf',
+            ]);
+        }
+
+        return $mail;
     }
 }

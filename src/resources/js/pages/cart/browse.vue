@@ -67,13 +67,20 @@
                     {{ getDate(cart.updatedAt) }}
                   </vs-td>
                   <vs-td class="skijasi-table__td">
-                      <vs-button
+                    <vs-button
+  size="large"
+  color="warning"
+  icon="edit"
+  @click="editCart(cart)"
+  v-if="$helper.isAllowed('edit_carts')"
+></vs-button>
+</vs-td><vs-td class="skijasi-table__td">             <vs-button
     size="large"
     color="danger"
     icon="delete"
     @click="confirmDelete(cart.id)"
     v-if="$helper.isAllowed('delete_carts')"
-  >Izbriši</vs-button>
+  ></vs-button>
                   </vs-td>
                 </vs-tr>
               </template>
@@ -81,8 +88,55 @@
           </div>
         </vs-card>
       </vs-col>
+      
     </vs-row>
+
+
+
+
+<vs-popup :title="'Promjena zaduženja (Promijeniti i u kartici člana pod plaćanje kada se rade ručne izmjene ovdje)'" :active.sync="editModal">
+      <vs-row>
+        <vs-col vs-w="12" vs-type="flex">
+          <skijasi-number
+            type="number"
+            v-model="editForm.quantity"
+            size="12"
+            :label="'Količina'"
+            :placeholder="'Promijeni količinu'"
+            style="margin-bottom: 8px !important;"
+          ></skijasi-number>
+        </vs-col>
+
+        <vs-col vs-w="12" vs-type="flex">
+          <vs-select
+  v-model="editForm.product_detail_id"
+  :label="'Zaduženje'"
+  style="margin-bottom: 8px !important;"
+>
+  <vs-select-item
+    :key="editForm.product_detail_id"
+    :value="editForm.product_detail_id"
+    :text="editForm.productName"
+  />
+  <vs-select-item
+    v-for="detail in productDetails"
+    :key="detail.id"
+    :value="detail.id"
+    :text="`${detail.product.name} - ${detail.name}`"
+  />
+</vs-select>
+    </vs-col>
+
+        <vs-col vs-w="12" vs-type="flex" vs-justify="flex-end">
+          <vs-button type="relief" color="primary" class="ml-2" @click="updateCart" :disabled="!isFormValid">
+            {{ $t('orders.confirm.button.save') }}
+          </vs-button>
+        </vs-col>
+      </vs-row>
+    </vs-popup>
+
   </div>
+  
 </template>
 
 <script>
@@ -92,6 +146,16 @@ export default {
   components: {},
   data() {
     return {
+      editModal: false,
+    editForm: {
+      id: null,
+      quantity: 0,
+      product_detail_id: 0,
+    },
+
+    productDetails: [],
+
+
       selected: [],
       carts: {
         data: []
@@ -105,31 +169,114 @@ export default {
       orderDirection: "desc",
     }
   },
+        computed: {
+        isFormValid() {
+          return this.editForm && 
+                this.editForm.quantity && 
+                this.editForm.quantity > 0 &&
+                this.editForm.product_detail_id;
+        },
+        filteredProductDetails() {
+    return this.productDetails.filter(detail => detail.id !== this.editForm.product_detail_id);
+  },
+      },
+      watch: {
+  editModal(newVal) {
+    if (newVal) {
+      this.getProductDetails();
+    }
+  }
+},
   mounted() {
-    this.getCartList()
+    this.getCartList();
   },
   methods: {
+    getProductDetails() {
+  this.$openLoader();
+  this.$api.skijasiProductDetail.browse({ relation: 'product' })
+    .then((response) => {
+      this.$closeLoader();
+      this.productDetails = response.data.productDetails;
+      console.log('Product details:', this.productDetails);
+    })
+    .catch((error) => {
+      this.$closeLoader();
+      this.$vs.notify({
+        title: this.$t("alert.danger"),
+        text: error.message,
+        color: "danger",
+      });
+    });
+},
+
+
+editCart(cart) {
+  this.editForm = {
+    id: cart.id,
+    quantity: cart.quantity || 0,
+    product_detail_id: cart.productDetail.id,
+    productName: `${cart.productDetail.product.name} - ${cart.productDetail.name}`,
+  };
+  this.getProductDetails(); // Fetch all product details
+  this.editModal = true;
+},
+              updateCart() {
+            if (!this.isFormValid) {
+              this.$vs.notify({
+                title: this.$t('alert.warning'),
+                text: 'Molimo ispunite sva polja',
+                color: 'warning'
+              });
+              return;
+            }
+
+            this.$openLoader();
+            this.$api.skijasiCart.edit(this.editForm)
+              .then((response) => {
+                this.$closeLoader();
+                this.editModal = false;
+                this.$vs.notify({
+                  title: 'Uspješno spremljeno',
+                  text: '',
+                  color: 'success'
+                });
+                this.getCartList();
+              })
+              .catch((error) => {
+                this.$closeLoader();
+                this.$vs.notify({
+                  title: this.$t('alert.danger'),
+                  text: error.message,
+                  color: 'danger'
+                });
+              });
+          },
+
     getDate(date) {
       return moment(date).format('DD MMMM YYYY')
     },
     getCartList() {
-      this.$openLoader();
-      this.$api.skijasiCart
-      .browse({ limit: this.limit, page: this.page, relation: ['productDetail.product', 'user'] })
-      .then((response) => {
-        this.$closeLoader();
-        this.selected = [];
-        this.carts = response.data.carts;
-      })
-      .catch((error) => {
-        this.$closeLoader();
-        this.$vs.notify({
-          title: this.$t("alert.danger"),
-          text: error.message,
-          color: "danger",
-        });
+  this.$openLoader();
+  this.$api.skijasiCart
+    .browse({ 
+      limit: this.limit, 
+      page: this.page, 
+      relation: 'productDetail.product,user' 
+    })
+    .then((response) => {
+      this.$closeLoader();
+      this.selected = [];
+      this.carts = response.data.carts;
+    })
+    .catch((error) => {
+      this.$closeLoader();
+      this.$vs.notify({
+        title: this.$t("alert.danger"),
+        text: error.message,
+        color: "danger",
       });
-    },
+    });
+},
     handleSearch(e) {
       this.filter = e.target.value;
       this.page = 1;

@@ -10,6 +10,8 @@ use NadzorServera\Skijasi\Helpers\ApiResponse;
 use NadzorServera\Skijasi\Module\Commerce\Models\Product;
 use NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail;
 
+use Illuminate\Support\Str;
+
 class ProductController extends Controller
 {
     public function browse(Request $request)
@@ -74,13 +76,14 @@ class ProductController extends Controller
             $request->validate([
                 'product_category_id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductCategory,id',
                 'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:NadzorServera\Skijasi\Module\Commerce\Models\Product',
+                // 'slug' => 'required|string|max:255|unique:NadzorServera\Skijasi\Module\Commerce\Models\Product',
                 'product_image' => 'required|string',
                 'desc' => 'nullable|string',
                 'desc2' => 'nullable|string',
                 'desc3' => 'nullable|string',
                 'desc4' => 'nullable|string',
                 'desc5' => 'nullable|string',
+                'form_id' => 'nullable',
                 'items' => 'required|array',
                 'items.*.discount_id' => 'nullable|integer|exists:NadzorServera\Skijasi\Module\Commerce\Models\Discount,id',
                 'items.*.name' => 'required|string|max:255',
@@ -90,10 +93,12 @@ class ProductController extends Controller
                 'items.*.product_image' => 'required|string',
             ]);
 
+            $slug = $this->generateSlug($request->name);
+
             Product::create([
                 'product_category_id' => $request->product_category_id,
                 'name' => $request->name,
-                'slug' => $request->slug,
+                'slug' => $slug,
                 'product_image' => $request->product_image,
                 'mjesto' => $request->mjesto,
                 'datum_pocetka' => $request->datum_kraja,
@@ -103,6 +108,7 @@ class ProductController extends Controller
                 'desc3' => $request->desc3,
                 'desc4' => $request->desc4,
                 'desc5' => $request->desc5,
+                'form_id' => $request->form_id,
             ]);
 
             $product = Product::select('id')->latest()->first();
@@ -128,6 +134,20 @@ class ProductController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+    private function generateSlug($name)
+                {
+                    $base = Str::slug(strtolower($name));
+                    $slug = $base;
+                    $counter = 1;
+
+                    while (Product::where('slug', $slug)->exists()) {
+                        $slug = $base . '-' . $counter;
+                        $counter++;
+                    }
+
+                    return strtolower($slug);
+                }
 
     public function restore(Request $request)
     {
@@ -212,6 +232,7 @@ class ProductController extends Controller
                 'desc3' => 'nullable|string',
                 'desc4' => 'nullable|string',
                 'desc5' => 'nullable|string',
+                'form_id' => 'nullable',
             ]);
 
             $product = Product::where('id', $request->id)->first();
@@ -226,6 +247,7 @@ class ProductController extends Controller
             $product->desc3 = $request->desc3;
             $product->desc4 = $request->desc4;
             $product->desc5 = $request->desc5;
+            $product->form_id = $request->form_id;
             $product->save();
 
             DB::commit();

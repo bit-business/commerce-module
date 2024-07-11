@@ -89,8 +89,8 @@ icon="visibility"
                     {{ toCurrency(order.payed) }}
                   </vs-td>
                   <vs-td :data="order.status">
-                    {{ getOrderStatus(order.status) }}
-                  </vs-td>
+  <span :style="getStatusStyle(order.status)">{{ getOrderStatus(order.status) }}</span>
+</vs-td>
                   <vs-td :data="order.createdAt">
                     {{ getDate(order.createdAt) }}
                   </vs-td>
@@ -133,6 +133,21 @@ export default {
     this.getOrderList();
   },
   methods: {
+  getStatusStyle(status) {
+    switch (status) {
+      case 'waitingSellerConfirmation':
+        return 'color: #ffb74d; font-weight: bold;'; // Light Orange, bold
+      case 'failed':
+        return 'color: #ef5350; font-weight: bold;'; // Light Red, bold
+      case 'done':
+        return 'color: #66bb6a; font-weight: bold;'; // Light Green, bold
+      default:
+        return '';
+    }
+  },
+
+
+
     toCurrency(value) {
     return currency(value, {
       precision: this.$store.state.skijasi.config.currencyPrecision,

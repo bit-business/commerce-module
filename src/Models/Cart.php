@@ -24,8 +24,10 @@ class Cart extends Model
         'product_detail_id',
         'user_id',
         'quantity',
+        'cekapotvrdu',
         'created_at',
         'updated_at',
+        'tblpaymentsid',
     ];
 
     /**

@@ -16,6 +16,9 @@ use NadzorServera\Skijasi\Module\Commerce\Models\OrderPayment;
 
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
 
+
+use Illuminate\Support\Facades\DB;
+
 class OrderController extends Controller
 {
     public function browse(Request $request)
@@ -121,6 +124,9 @@ class OrderController extends Controller
                 foreach ($order->orderDetails as $key => $orderDetail) {
                     $orderDetail->productDetail->quantity += $orderDetail->quantity;
                     $orderDetail->productDetail->save();
+
+                    $this->updateCekapotvrduForCartItem($orderDetail->product_detail_id, 0);
+
                 }
 
                 $order->status = 'cancel';
@@ -160,6 +166,9 @@ class OrderController extends Controller
                 foreach ($order->orderDetails as $key => $orderDetail) {
                     $orderDetail->productDetail->quantity += $orderDetail->quantity;
                     $orderDetail->productDetail->save();
+
+                    $this->updateCekapotvrduForCartItem($orderDetail->product_detail_id, 0);
+
                 }
 
                 $order->status = 'cancel';
@@ -177,6 +186,12 @@ class OrderController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+    private function updateCekapotvrduForCartItem($productDetailId, $value)
+    {
+        Cart::where('product_detail_id', $productDetailId)->update(['cekapotvrdu' => $value]);
+    }
+
 
     public function ship(Request $request)
     {
@@ -215,30 +230,105 @@ class OrderController extends Controller
     }
 }
 
+public function updateStaroPlacanje($orderId)
+{
+    $orderDetails = OrderDetail::where('order_id', $orderId)->get();
+    
+    foreach ($orderDetails as $orderDetail) {
+        $cartItems = Cart::where('product_detail_id', $orderDetail->product_detail_id)->get();
+        foreach ($cartItems as $cartItem) {
 
-    public function done(Request $request)
-    {
-        try {
-            $request->validate([
-                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Order,id',
-            ]);
+       
 
-            $order = Order::find($request->id);
-          //  if ($order->status = 'delivering') {
-                $order->status = 'done';
-                $order->save();
+    
+        if ($orderDetail->product_detail_id == 13)  {
+                DB::table('tbl_payments')->insert([
+                    'idmember' => $cartItem->user_id,
+                    'callnumber' => $cartItem->user_id, 
+                    'idpaygroup' => 3,
+                    'idpaysubgroup' => 80, 
+                    'price' => 10, 
+                    'paidvalue' => 10, 
+                    'opendate' => now(),
+                    'paidstatus' => 1,
+                    'paydate' => now(),
+                    'paymenttitle' => 'Amblem',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                
+                ]); }
+                else if ($orderDetail->product_detail_id == 10)  {
+                    DB::table('tbl_payments')->insert([
+                        'idmember' => $cartItem->user_id, 
+                        'callnumber' => $cartItem->user_id, 
+                        'idpaygroup' => 2,
+                        'idpaysubgroup' => 142, 
+                        'price' => 8, 
+                        'paidvalue' => 8, 
+                        'opendate' => now(),
+                        'paidstatus' => 1,
+                        'paymenttitle' => 'Izdavanje iskaznice',
+                        'paydate' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    
+                    ]); }
+                    else if ($orderDetail->product_detail_id == 14)  {
+                        DB::table('tbl_payments')->insert([
+                            'idmember' => $cartItem->user_id, 
+                            'callnumber' => $cartItem->user_id, 
+                            'idpaygroup' => 3,
+                            'idpaysubgroup' => 80, 
+                            'price' => 5, 
+                            'paidvalue' => 5, 
+                            'opendate' => now(),
+                            'paidstatus' => 1,
+                            'paymenttitle' => 'Potvrda',
+                            'paydate' => now(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                         
+                        ]); }
 
-
-                $this->deleteCartItems($order->id);
-
-                event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'done'));
-
-                return ApiResponse::success();
-          //  }
-
-          //  return ApiResponse::failed();
-        } catch (Exception $e) {
-            return ApiResponse::failed($e);
+                       else {
+                            DB::table('tbl_payments')
+                            ->where('id', $cartItem->tblpaymentsid)
+                            ->update([
+                                'paidstatus' => 1,
+                                'paidvalue' => DB::raw('price'),
+                                'paydate' => now()
+                            ]);
+                        }
         }
     }
+}
+
+public function done(Request $request)
+{
+    try {
+        $request->validate([
+            'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Order,id',
+        ]);
+
+        $order = Order::find($request->id);
+        $order->status = 'done';
+        $order->save();
+
+        $this->updateStaroPlacanje($order->id);
+
+
+        $this->deleteCartItems($order->id);
+
+        event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'done'));
+
+        return ApiResponse::success();
+
+    } catch (Exception $e) {
+        return ApiResponse::failed($e);
+    }
+}
+
+
+
+
 }

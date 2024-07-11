@@ -18,19 +18,17 @@ class CartController extends Controller
                 'limit' => 'sometimes|required|integer',
                 'relation' => 'nullable',
             ]);
-
+    
+            $relations = $request->relation ? explode(',', $request->relation) : [];
+            $relations[] = 'productDetail.product'; // Add this line
+    
             if ($request->has('page') || $request->has('limit')) {
-                $carts = Cart::when($request->relation, function ($query) use ($request) {
-                    return $query->with(explode(',', $request->relation));
-                })->paginate($request->limit);
+                $carts = Cart::with($relations)->paginate($request->limit ?? 10);
             } else {
-                $carts = Cart::when($request->relation, function ($query) use ($request) {
-                    return $query->with(explode(',', $request->relation));
-                })->get();
+                $carts = Cart::with($relations)->get();
             }
-
+    
             $data['carts'] = $carts->toArray();
-
             return ApiResponse::success($data);
         } catch (Exception $e) {
             return ApiResponse::failed($e);
@@ -71,4 +69,28 @@ class CartController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
+
+    public function edit(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
+                'quantity' => 'required|integer|min:1',
+                'product_detail_id' => 'required|exists:skijasi_product_details,id',
+                
+            ]);
+    
+            $cart = Cart::findOrFail($request->id);
+            $cart->quantity = $request->quantity;
+            $cart->product_detail_id = $request->product_detail_id;
+            $cart->save();
+    
+            return ApiResponse::success(['message' => 'Cart updated successfully']);
+        } catch (Exception $e) {
+            return ApiResponse::failed($e);
+        }
+    }
+
+
 }

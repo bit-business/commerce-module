@@ -249,6 +249,27 @@ export default {
     this.getOrderDetail();
   },
   methods: {
+    done() {
+      this.$openLoader();
+      this.$api.skijasiOrder
+        .done({ id: this.$route.params.id })
+        .then((response) => {
+          this.$closeLoader();
+          this.getOrderDetail()
+        })
+        .catch((error) => {
+          this.$closeLoader();
+          this.$vs.notify({
+            title: this.$t("alert.danger"),
+            text: error.message,
+            color: "danger",
+          });
+        });
+    },
+
+
+
+    
     toCurrency(value) {
     return currency(value, {
       precision: this.$store.state.skijasi.config.currencyPrecision,
@@ -345,25 +366,7 @@ export default {
           });
         });
     },
-    done() {
-      this.$openLoader();
-      this.$api.skijasiOrder
-        .done({ id: this.$route.params.id })
-        .then((response) => {
-          this.$closeLoader();
-          this.getOrderDetail()
-        })
-        .catch((error) => {
-          this.$closeLoader();
-          this.$vs.notify({
-            title: this.$t("alert.danger"),
-            text: error.message,
-            color: "danger",
-          });
-        });
-    },
-
-
+ 
 
     
     openTrackingNumber() {

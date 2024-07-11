@@ -5,9 +5,27 @@
       <vs-col vs-lg="12">
         <vs-card>
           <div slot="header">
-            <h3>{{ $t("product.add.title") }}</h3>
+            <h3>Izmjena događaja</h3>
           </div>
-          <vs-row>
+          <vs-row class="gapredovi">
+  
+           
+
+            <vs-col vs-w="6" class="mb-3">
+              <skijasi-upload-image-dogadaji
+                v-model="product.productImage"
+                size="12"
+                :label="'Slika'"
+                :placeholder="'obavezno'"
+                :alert="errors.productImage"
+                style="margin-bottom: 8px !important;"
+              ></skijasi-upload-image-dogadaji>
+              <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
+
+
             <vs-col vs-w="6" class="mb-3">
               <skijasi-text
                 v-model="product.name"
@@ -21,54 +39,76 @@
                 <span class="danger" v-if="$v.product.name.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
-            <vs-col vs-w="6" class="mb-3">
+
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-select
+          v-model="formIdString"
+            :items="availableForms"
+            size="12"
+            :label="'Prijavnica za događaj'"
+            :placeholder="'Odaberi prijavnicu za seminar (stvorit prije u meniju pod Prijavnice)'"
+            :alert="errors.formId"
+            style="margin-bottom: 8px !important;"
+          ></skijasi-select>
+              <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.mjesto.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
+
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
               <skijasi-text
-                disabled
-                v-model="product.slug"
+                v-model="product.mjesto"
                 size="12"
-                :label="$t('product.add.field.slug.title')"
-                :placeholder="$t('product.add.field.slug.placeholder')"
-                :alert="errors.slug"
+                :label="'Mjesto događaja'"
+                :placeholder="'Unesi mjesto događaja (obavezno)'"
+                :alert="errors.mjesto"
                 style="margin-bottom: 8px !important;"
               ></skijasi-text>
               <template v-if="$v.product.$dirty">
-                <span class="danger" v-if="$v.product.slug.$anyError">{{ $t('vuelidate.error') }}</span>
+                <span class="danger" v-if="$v.product.mjesto.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
-            <vs-col vs-w="6" class="mb-3">
-              <skijasi-select
-                v-model="product.productCategoryId"
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-date
+                v-model="product.datumPocetka"
+                value-zone="local"
                 size="12"
-                :label="$t('product.add.field.productCategoryId.title')"
-                :placeholder="$t('product.add.field.productCategoryId.placeholder')"
-                :alert="errors.productCategoryId"
-                :items="categories"
+                :label="'Datum početka događaja'"    
+                :alert="errors.datum_pocetka"
                 style="margin-bottom: 8px !important;"
-              ></skijasi-select>
+              ></skijasi-date>
               <template v-if="$v.product.$dirty">
-                <span class="danger" v-if="$v.product.productCategoryId.$anyError">{{ $t('vuelidate.error') }}</span>
+                <span class="danger" v-if="$v.product.datum_pocetka.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
-            <vs-col vs-w="6" class="mb-3">
-              <skijasi-upload-image-dogadaji
-                v-model="product.productImage"
+
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+              <skijasi-date
+                v-model="product.datumKraja"
+                value-zone="local"
                 size="12"
-                :label="$t('product.add.field.productImage.title')"
-                :placeholder="$t('product.add.field.productImage.placeholder')"
-                :alert="errors.productImage"
+                :label="'Datum kraja događaja'"
+                :alert="errors.datum_kraja"
                 style="margin-bottom: 8px !important;"
-              ></skijasi-upload-image-dogadaji>
+              ></skijasi-date>
               <template v-if="$v.product.$dirty">
-                <span class="danger" v-if="$v.product.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
+                <span class="danger" v-if="$v.product.datum_kraja.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
             </vs-col>
+
+       
+
+
             
             <skijasi-editor
               editorId="editor1"
               v-model="product.desc"
               size="12"
-              :label="$t('Tekst za rubriku O Skijalištu')"
-              :placeholder="$t('product.add.field.desc.placeholder')"
+              :label="'Tekst za rubriku O SKIJALIŠTU'"
+              :placeholder="'Tekst za rubriku O SKIJALIŠTU'"
               :alert="errors.desc"
             ></skijasi-editor>
 
@@ -76,32 +116,32 @@
               editorId="editor2"
               v-model="product.desc2"
               size="12"
-              :label="$t('Tekst za rubriku Informacije')"
-              :placeholder="$t('')"
+              :label="'Tekst za rubriku INFORMACIJE'"
+              :placeholder="'Tekst za rubriku INFORMACIJE'"
               :alert="errors.desc2"
             ></skijasi-editor>
             <skijasi-editor
             editorId="editor3"
               v-model="product.desc3"
               size="12"
-              :label="$t('Tekst za rubriku Smještaj')"
-              :placeholder="$t('')"
+              :label="'Tekst za rubriku SMJEŠTAJ'"
+              :placeholder="'Tekst za rubriku SMJEŠTAJ'"
               :alert="errors.desc3"
             ></skijasi-editor>
             <skijasi-editor
             editorId="editor4"
               v-model="product.desc4"
               size="12"
-              :label="$t('Tekst za rubriku Prijevoz')"
-              :placeholder="$t('')"
+              :label="'Tekst za rubriku PRIJEVOZ'"
+              :placeholder="'Tekst za rubriku PRIJEVOZ'"
               :alert="errors.desc4"
             ></skijasi-editor>
             <skijasi-editor
             editorId="editor5"
               v-model="product.desc5"
               size="12"
-              :label="$t('Tekst za rubriku Plaćanje')"
-              :placeholder="$t('')"
+              :label="'Tekst za rubriku PLAĆANJE'"
+              :placeholder="'Tekst za rubriku PLAĆANJE'"
               :alert="errors.desc5"
             ></skijasi-editor>
 
@@ -144,36 +184,33 @@
                 <vs-td :data="product.SKU">
                   {{ product.SKU }}
                 </vs-td>
-                <vs-td style="width: 1%; white-space: nowrap">
-                  <skijasi-dropdown vs-trigger-click>
-                    <vs-button
-                      size="large"
-                      type="flat"
-                      icon="more_vert"
-                    ></vs-button>
-                    <vs-dropdown-menu>
-                      <skijasi-dropdown-item
+                <vs-td style="width: 1%; white-space: nowrap; align-items: center; ">
+              
+                   
+                      <vs-button
+                                  class="button-spacing"
                         icon="edit"
                         v-if="$helper.isAllowed('edit_product_details')"
                         @click="openEditDialog(product, index)"
                       >
-                        Edit
-                      </skijasi-dropdown-item>
-                      <skijasi-dropdown-item
+                
+                      </vs-button>
+                      <vs-button
+                                  class="button-spacing"
                         icon="delete"
                         v-if="$helper.isAllowed('delete_product_details')"
                         @click="openDeleteDialog(product, index)"
                       >
-                        Delete
-                      </skijasi-dropdown-item>
-                    </vs-dropdown-menu>
-                  </skijasi-dropdown>
+              
+                      </vs-button>
+             
+               
                 </vs-td>
               </vs-tr>
               <vs-tr>
                 <vs-td colspan="8" class="product-detail__button--add">
                   <vs-button type="relief" icon="add" v-if="$helper.isAllowed('add_product_details')" color="primary" @click="openAddProductDetail">
-                    Add new product
+                    Dodaj Status, Cijenu i Količinu
                   </vs-button>
                 </vs-td>
               </vs-tr>
@@ -234,7 +271,7 @@
               <span class="danger" v-if="$v.addProductDetail.price.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
           </vs-col>
-          <vs-col vs-w="6" class="mb-3">
+          <!-- <vs-col vs-w="6" class="mb-3">
             <skijasi-text
               v-model="addProductDetail.SKU"
               size="12"
@@ -246,7 +283,7 @@
             <template v-if="$v.addProductDetail.$dirty">
               <span class="danger" v-if="$v.addProductDetail.SKU.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
-          </vs-col>
+          </vs-col> -->
           <skijasi-select
             v-model="addProductDetail.discountId"
             size="6"
@@ -317,7 +354,7 @@
               <span class="danger" v-if="$v.editProductDetail.price.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
           </vs-col>
-          <vs-col vs-w="6" class="mb-3">
+          <!-- <vs-col vs-w="6" class="mb-3">
             <skijasi-text
               v-model="editProductDetail.SKU"
               size="12"
@@ -329,7 +366,7 @@
             <template v-if="$v.editProductDetail.$dirty">
               <span class="danger" v-if="$v.editProductDetail.SKU.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
-          </vs-col>
+          </vs-col> -->
           <skijasi-select
             v-model="editProductDetail.discountId"
             size="6"
@@ -365,10 +402,16 @@
 <script>
 import { required, minValue, maxValue, integer } from "vuelidate/lib/validators";
 import currency from "currency.js"
+import api from "../../../../../../commerce-theme/src/resources/js/api/modules/skijasi-commerce-theme-configuration.js";
+
 export default {
   name: "ProductAdd",
   components: {},
   data: () => ({
+    selectedCategoryName: '',
+    forms: {
+        items: []
+      },
     
     errors: {},
     product: {
@@ -381,7 +424,9 @@ export default {
       desc3: "",
       desc4: "",
       desc5: "",
+      formId: "",
     },
+    
     addProductDetail: {
       discountId: '',
       name: '',
@@ -437,9 +482,9 @@ export default {
           minValue: minValue(0),
           integer
         },
-        SKU: {
-          required
-        },
+        // SKU: {
+        //   required
+        // },
         productImage: {
           required
         }
@@ -458,9 +503,9 @@ export default {
           minValue: minValue(0),
           integer
         },
-        SKU: {
-          required
-        },
+        // SKU: {
+        //   required
+        // },
         productImage: {
           required
         }
@@ -468,11 +513,66 @@ export default {
     };
   },
   mounted() {
-    this.getProductDetail()
-    this.getProductCategoryList()
-    this.getProductDiscounts()
+    this.getProductDetail();
+    this.getProductCategoryList();
+    this.getProductDiscounts();
+    this.getForms();
+ 
   },
+  computed: {
+  availableForms() {
+    return this.forms.items.map(form => ({
+      label: form.name,
+      value: String(form.id)
+    }));
+  },
+
+  formIdString: {
+      get() {
+        return String(this.product.formId);
+      },
+      set(value) {
+        this.product.formId = value !== '' ? Number(value) : null;
+      }
+    }
+  
+},
   methods: {
+    updateCategoryName() {
+    const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
+    this.selectedCategoryName = selectedCategory ? selectedCategory.label : '';
+    console.log("TEST1:", selectedCategory);
+    console.log("TEST12:",  this.selectedCategoryName);
+    },  
+
+
+    async getForms() {
+          try {
+        const response = await api.browseForm();
+        console.log("Raw API response:", response.data);
+        let formsData;
+        if (typeof response.data === 'string') {
+          formsData = JSON.parse(response.data);
+        } else {
+          formsData = response.data;
+        }
+
+        if (formsData && formsData.forms && formsData.forms['\u0000*\u0000items']) {
+          this.forms = {
+            items: formsData.forms['\u0000*\u0000items'].map(item => ({ ...item }))
+          };
+        } else {
+          console.error("Unexpected API response structure:", formsData);
+          this.forms = { items: [] };
+        }
+
+      } catch (error) {
+        console.error('Error fetching forms:', error);
+        this.forms = { items: [] };
+      }
+    },
+
+
     toCurrency(value) {
       return currency(value, {
         precision: this.$store.state.skijasi.config.currencyPrecision,
@@ -489,6 +589,8 @@ export default {
         this.$closeLoader();
         this.product = response.data.product;
         this.items = response.data.product.productDetails;
+
+        console.log("TEST get:", this.product);
       })
       .catch((error) => {
         this.$closeLoader();
@@ -511,6 +613,7 @@ export default {
             value: category.id
           }
         });
+        this.updateCategoryName();
       })
       .catch((error) => {
         this.$closeLoader();
@@ -555,11 +658,27 @@ export default {
         this.$v.product.$reset()
         try {
           this.$openLoader();
+
+          if (this.selectedCategoryName == "Licenca") {
+                delete this.product.datum_pocetka;
+                delete this.product.datum_kraja;
+                delete this.product.formId;
+            } else{
+                 // Format the datum_pocetka and datum_kraja using moment
+      if (this.product.datum_pocetka) {
+         this.product.datum_pocetka = moment(this.product.datum_pocetka).format('YYYY-MM-DD HH:mm:ss');
+      }
+      if (this.product.datum_kraja) {
+         this.product.datum_kraja = moment(this.product.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
+      } }
+
+
           this.$api.skijasiProduct
             .edit({ ...this.product, items: this.items, id: this.$route.params.id })
             .then((response) => {
               this.$closeLoader();
-              this.$router.push({ name: "ProductBrowse" });
+         
+               this.$router.push({ name: "ProductBrowse" });
             })
             .catch((error) => {
               this.errors = error.errors;
@@ -695,5 +814,14 @@ export default {
 .danger {
   color: rgba(var(--vs-danger), 1);
   display: inline-block;
+}
+
+.button-spacing:not(:last-child) {
+  margin-bottom: 5px;
+}
+
+.gapredovi {
+ gap: 1.2rem !important;
+ font-weight: bold;
 }
 </style>

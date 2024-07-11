@@ -17,15 +17,15 @@ export default {
   },
   product: {
     browse: {
-      title: "Proizvod",
+      title: "Administracija događaja i licenci",
       header: {
-        name: "Naziv proizvoda",
+        name: "Naziv događaja/licence",
         slug: "Slug",
         productCategoryId: "Kategorija",
-        productImage: "Slika proizvoda",
+        productImage: "Slika",
         createdAt: "Stvoreno",
         updatedAt: "Ažurirano",
-        action: "Akcija",
+        action: "Opcija",
       },
       footer: {
         descriptionTitle: "Rezultati",
@@ -50,23 +50,23 @@ export default {
       },
     },
     add: {
-      title: "Dodaj proizvod",
+      title: "Dodaj novi",
       field: {
         name: {
-          title: "Naziv proizvoda",
-          placeholder: "Naziv proizvoda",
+          title: "Naziv",
+          placeholder: "Naziv",
         },
         slug: {
           title: "Slug",
           placeholder: "Slug",
         },
         productCategoryId: {
-          title: "Kategorija proizvoda",
-          placeholder: "Kategorija proizvoda",
+          title: "Kategorija",
+          placeholder: "Kategorija",
         },
         productImage: {
-          title: "Slika proizvoda",
-          placeholder: "Slika proizvoda",
+          title: "Slika",
+          placeholder: "Slika",
         },
         desc: {
           title: "Opis",
@@ -74,43 +74,43 @@ export default {
         },
       },
       header: {
-        productImage: "Slika proizvoda",
-        name: "Naziv proizvoda",
+        productImage: "Slika",
+        name: "Naziv",
         quantity: "Količina",
         price: "Cijena",
         discount: "Popust",
         SKU: "SKU",
-        action: "Akcija",
+        action: "Opcije",
       },
       button: "Spremi",
       detail: {
-        title: "Detalji proizvoda",
+        title: "Postavke Plaćanja preko Web-a",
         add: {
-          title: "Dodaj detalje proizvoda",
+          title: "Dodaj plaćanje/za svaki status",
           field: {
             name: {
-              title: "Naziv detalja proizvoda",
-              placeholder: "Naziv detalja proizvoda",
+              title: "Naziv statusa",
+              placeholder: "Obavezno točan naziv statusa (npr.Učitelj skijanja)",
             },
             quantity: {
-              title: "Zaliha proizvoda",
-              placeholder: "Zaliha proizvoda",
+              title: "Količina - Maksimalni broj",
+              placeholder: "Max prodanih (99999 ukoliko nema ograničenja)",
             },
             price: {
-              title: "Cijena proizvoda",
-              placeholder: "Cijena proizvoda",
+              title: "Cijena",
+              placeholder: "Cijena",
             },
             SKU: {
               title: "SKU detalja proizvoda",
               placeholder: "SKU detalja proizvoda",
             },
             productImage: {
-              title: "Slika detalja proizvoda",
-              placeholder: "Slika detalja proizvoda",
+              title: "Slika",
+              placeholder: "Ukoliko nema može biti slika seminara",
             },
             discount: {
               title: "Popust",
-              placeholder: "Popust",
+              placeholder: "nije obavezno",
             },
           },
           button: {
@@ -169,7 +169,7 @@ export default {
   },
   productCategories: {
     browse: {
-      title: "Kategorije proizvoda",
+      title: "Kategorije",
       header: {
         name: "Naziv kategorije",
         slug: "Slug",
@@ -178,7 +178,7 @@ export default {
         SKU: "SKU",
         createdAt: "Stvoreno",
         updatedAt: "Ažurirano",
-        action: "Akcija",
+        action: "Opcije",
       },
       footer: {
         descriptionTitle: "Rezultati",
