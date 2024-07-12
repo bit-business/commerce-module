@@ -678,7 +678,7 @@ export default {
               if (this.selectedCategoryName == "Licenca") {
                 delete this.product.datum_pocetka;
                 delete this.product.datum_kraja;
-                delete this.product.form_id;
+                 this.product.form_id = 0;
             } else{
                  // Format the datum_pocetka and datum_kraja using moment
       if (this.product.datum_pocetka) {
