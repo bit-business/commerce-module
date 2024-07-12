@@ -675,10 +675,10 @@ export default {
           this.$openLoader();
   
               // Remove datum_pocetka from the product if selectedCategoryName is "Licenca"
-              if (this.selectedCategoryName == "Licenca") {
+              if (this.selectedCategoryName == "Licence") {
                 delete this.product.datum_pocetka;
                 delete this.product.datum_kraja;
-                 this.product.form_id = 0;
+                delete this.product.form_id;
             } else{
                  // Format the datum_pocetka and datum_kraja using moment
       if (this.product.datum_pocetka) {
