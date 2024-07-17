@@ -35,4 +35,13 @@ export default {
   done(data) {
     return resource.post(apiPrefix + "/v1/order/done", data);
   },
+
+
+  getOrdersPerMonth(data = {}) {
+    const ep = `${apiPrefix}/v1/order/orderpermonth`;
+    const qs = QueryString(data);
+    const url = `${ep}${qs}`;
+    return resource.get(url);
+  },
+
 };

@@ -90,6 +90,7 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::post('/ship', HelperRoute::getController('OrderController@ship'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
             Route::post('/done', HelperRoute::getController('OrderController@done'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
 
+            Route::get('/orderpermonth', HelperRoute::getController('OrderController@getOrdersPerMonth'))->middleware(SkijasiCheckPermissions::class.':read_orders');
         });
 
         Route::group(['prefix' => 'cart'], function () {

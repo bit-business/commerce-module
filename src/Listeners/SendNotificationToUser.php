@@ -8,7 +8,7 @@ use NadzorServera\Skijasi\Models\User;
 use NadzorServera\Skijasi\Module\Commerce\Events\OrderStateWasChanged;
 use NadzorServera\Skijasi\Module\Commerce\Mail\MailNotificationOrder;
 
-use Illuminate\Support\Facades\Log;
+use App\Models\AdminMessage; 
 
 class SendNotificationToUser
 {
@@ -58,6 +58,8 @@ class SendNotificationToUser
             case 'done':
                 $title = 'Vaša kupnja je potvrđena';
                 $content = "Vaša narudžba na HZUTS web stranici pod brojem: {$event->order->id} je upješno potvrđena. Hvala Vam na kupnji!";
+                 // Send admin message
+                 $this->sendAdminMessage($event->user->id, $title, $content);
                 break;
             case 'cancel':
                 $title = 'Narudžba je odbijena';
@@ -86,4 +88,17 @@ class SendNotificationToUser
             'sender_user_id' => $sender_user->id,
         ]);
     }
+
+
+    private function sendAdminMessage($userId, $title, $content)
+    {
+        AdminMessage::create([
+            'message' => $content,
+            'sent_by' => 1, // Assuming 1 is the ID of the system admin or use appropriate ID
+            'sent_to' => ["$userId"],
+            'url' => null, // Add URL if needed
+            'slika' => null, // Add image URL if needed
+        ]);
+    }
+
 }

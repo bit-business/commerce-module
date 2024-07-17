@@ -184,6 +184,18 @@
 
     
 
+          <vs-col vs-w="12" class="mb-3"  v-if="selectedCategoryName.trim() == 'Događanja'">
+  <skijasi-upload-image-dogadaji-galerija
+    v-model="product.galleryimages"
+    size="12"
+    :label="'Galerija slika'"
+    :placeholder="'Dodajte slike za galeriju'"
+    :alert="errors.galleryimages"
+    multiple
+    style="margin-bottom: 8px !important;"
+  ></skijasi-upload-image-dogadaji-galerija>
+</vs-col>
+
 
 
 
@@ -467,6 +479,8 @@ export default {
       datum_pocetka: "",
       datum_kraja: "",
       form_id: "",
+
+      galleryimages: [],
     },
     addProductDetail: {
       discountId: '',
@@ -679,6 +693,7 @@ export default {
                 delete this.product.datum_pocetka;
                 delete this.product.datum_kraja;
                 delete this.product.form_id;
+                delete this.product.galleryimages;
             } else{
                  // Format the datum_pocetka and datum_kraja using moment
       if (this.product.datum_pocetka) {
@@ -688,9 +703,13 @@ export default {
          this.product.datum_kraja = moment(this.product.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
       } }
 
+      const productData = {
+    ...this.product, items: this.items,
+    galleryimages: this.product.galleryimages,
+  };
 
           this.$api.skijasiProduct
-            .add({ ...this.product, items: this.items })
+            .add (productData)
             .then((response) => {
               this.$closeLoader();
               this.$router.push({ name: "ProductBrowse" });

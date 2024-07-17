@@ -85,14 +85,15 @@
               <th>{{ $t("orders.confirm.header.shippingCost") }}</th>
               <td>{{ toCurrency(order.shippingCost) }}</td>
             </tr>
-          
+<!--           
             <tr>
               <th>{{ $t("orders.confirm.header.trackingNumber") }}</th>
               <td>
                 <span v-if="order.trackingNumber">{{ order.trackingNumber }}</span>
                 <span v-else></span>
               </td>
-            </tr>
+            </tr> -->
+         
             <tr>
               <th>{{ $t("orders.confirm.header.expiredAt") }}</th>
               <td>
@@ -100,12 +101,18 @@
                 <span v-else></span>
               </td>
             </tr>
+
+            <tr>
+              <th>{{ "Poruka od kupca" }}</th>
+              <td style="font-weight: bolder; color:darkorange">{{ order.message }}</td>
+            </tr>
+
             <tr>
               <th>{{ $t("orders.confirm.header.payed") }}</th>
-              <td style="font-weight: bolder;">{{ toCurrency(order.payed) }}</td>
+              <td style="font-weight: bolder; font-size:medium;">{{ toCurrency(order.payed) }}</td>
             </tr>
             <tr v-if="order.status != 'cancel' && order.status != 'done'">
-              <th>{{ $t("orders.confirm.header.action") }}</th>
+              <!-- <th>{{ $t("orders.confirm.header.action") }}</th> -->
               <td>
                 <vs-button type="relief" color="success" @click="done" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
                   <!-- <vs-icon icon="check"></vs-icon> -->

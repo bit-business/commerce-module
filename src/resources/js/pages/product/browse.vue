@@ -60,7 +60,8 @@
               </template>
 
               <template slot="tbody">
-                <vs-tr :data="product" :key="index" v-for="(product, index) in products.data">
+                <vs-tr v-for="product in sortedProducts" :key="product.id">
+                <!-- <vs-tr :data="product" :key="index" v-for="(product, index) in products.data"> -->
                   <vs-td :data="product.productImage">
                     <img width="100" :src="product.productImage" loading="lazy">
                   </vs-td>
@@ -138,13 +139,23 @@ export default {
       filter: "",
       page: 1,
       limit: 10,
-      orderField: "updated_at",
+      orderField: "createdAt",
       orderDirection: "desc",
     }
   },
   mounted() {
     this.getProductList()
   },
+  computed: {
+  sortedProducts() {
+    return [...this.products.data].sort((a, b) => {
+      let modifier = this.orderDirection === 'desc' ? -1 : 1;
+      if(a[this.orderField] < b[this.orderField]) return -1 * modifier;
+      if(a[this.orderField] > b[this.orderField]) return 1 * modifier;
+      return 0;
+    });
+  }
+},
   methods: {
     getDate(date) {
       return moment(date).format('DD MMMM YYYY')
@@ -216,7 +227,13 @@ export default {
     getProductList() {
       this.$openLoader();
       this.$api.skijasiProduct
-      .browse({ limit: this.limit, page: this.page, relation: ['productCategory'] })
+      .browse({
+      limit: this.limit,
+      page: this.page,
+      relation: ['productCategory'],
+      sort: this.orderField,
+      order: this.orderDirection
+    })
       .then((response) => {
         this.$closeLoader();
         this.selected = [];
@@ -246,10 +263,12 @@ export default {
       this.getProductList();
     },
     handleSort(field, direction) {
-      this.orderField = field;
-      this.orderDirection = direction;
-      this.getProductList();
-    },
+  console.log("handleSort called with:", field, direction);
+  this.orderField = field;
+  this.orderDirection = direction;
+  console.log("New sort:", this.orderField, this.orderDirection);
+  this.getProductList();
+},
     handleSelect(data) {
       this.selected = data;
     },

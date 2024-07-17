@@ -91,6 +91,8 @@ class ProductController extends Controller
                 'items.*.price' => 'required|integer|min:0',
                 'items.*.s_k_u' => 'nullable|string|max:255',
                 'items.*.product_image' => 'required|string',
+                'galleryimages' => 'nullable',
+                'galleryimages.*' => 'string',
             ]);
 
             $slug = $this->generateSlug($request->name);
@@ -109,6 +111,7 @@ class ProductController extends Controller
                 'desc4' => $request->desc4,
                 'desc5' => $request->desc5,
                 'form_id' => $request->form_id,
+                'galleryimages' => json_encode($request->galleryimages),
             ]);
 
             $product = Product::select('id')->latest()->first();
@@ -210,6 +213,11 @@ class ProductController extends Controller
                 return $query->with(explode(',', $request->relation));
             })->where('id', $request->id)->first();
             $data['product'] = $product->toArray();
+            
+
+            $galleryImages = json_decode($product->galleryimages, true);
+            $data['product']['galleryimages'] = $galleryImages;
+    
 
             return ApiResponse::success($data);
         } catch (Exception $e) {
@@ -233,6 +241,8 @@ class ProductController extends Controller
                 'desc4' => 'nullable|string',
                 'desc5' => 'nullable|string',
                 'form_id' => 'nullable',
+                'galleryimages' => 'nullable',
+                'galleryimages.*' => 'string',
             ]);
 
             $product = Product::where('id', $request->id)->first();
@@ -248,6 +258,8 @@ class ProductController extends Controller
             $product->desc4 = $request->desc4;
             $product->desc5 = $request->desc5;
             $product->form_id = $request->form_id;
+            $product->galleryimages = json_encode($request->galleryimages);
+            
             $product->save();
 
             DB::commit();

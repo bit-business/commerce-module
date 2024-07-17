@@ -88,8 +88,8 @@ icon="visibility"
                   <vs-td :data="order.payed">
                     {{ toCurrency(order.payed) }}
                   </vs-td>
-                  <vs-td :data="order.status">
-  <span :style="getStatusStyle(order.status)">{{ getOrderStatus(order.status) }}</span>
+                  <vs-td :data="order.status" style="display: flex; justify-content: center; align-items: center;">
+  <vs-chip :style="getStatusStyle(order.status)">{{ getOrderStatus(order.status) }}</vs-chip>
 </vs-td>
                   <vs-td :data="order.createdAt">
                     {{ getDate(order.createdAt) }}
@@ -136,11 +136,11 @@ export default {
   getStatusStyle(status) {
     switch (status) {
       case 'waitingSellerConfirmation':
-        return 'color: #ffb74d; font-weight: bold;'; // Light Orange, bold
+        return 'background-color: #ffb74d; font-weight: bold;'; // Light Orange, bold
       case 'failed':
-        return 'color: #ef5350; font-weight: bold;'; // Light Red, bold
+        return 'background-color: #ef5350; font-weight: bold;'; // Light Red, bold
       case 'done':
-        return 'color: #66bb6a; font-weight: bold;'; // Light Green, bold
+        return 'background-color: #66bb6a; font-weight: bold;'; // Light Green, bold
       default:
         return '';
     }

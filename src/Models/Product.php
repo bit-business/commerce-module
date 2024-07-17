@@ -40,6 +40,7 @@ class Product extends Model
         'mjesto',
         'prijavnicalink',
         'form_id',
+        'galleryimages',
 
         'created_at',
         'updated_at',

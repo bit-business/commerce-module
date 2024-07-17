@@ -143,6 +143,7 @@ class OrderController extends Controller
 
                 event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'process'));
 
+                
                 return ApiResponse::success();
             }
 
@@ -328,6 +329,38 @@ public function done(Request $request)
     }
 }
 
+
+
+public function getOrdersPerMonth(Request $request)
+{
+    try {
+        $startDate = $request->get('start_date', Carbon::now()->subYear()->startOfMonth());
+        $endDate = $request->get('end_date', Carbon::now()->endOfMonth());
+
+        $orders = Order::selectRaw('COUNT(*) as count, DATE_FORMAT(created_at, "%Y-%m") as month')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $formattedData = $orders->map(function ($item) {
+            return [
+                'month' => Carbon::parse($item->month)->format('n Y'), // Use 'n' for month number without leading zeros
+                'count' => $item->count
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'items' => $formattedData
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

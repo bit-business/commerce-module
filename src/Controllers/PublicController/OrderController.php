@@ -574,5 +574,4 @@ public function stvoriuplatnicu(Request $request)
 
 
 
-
 }

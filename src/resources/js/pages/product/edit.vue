@@ -145,7 +145,21 @@
               :alert="errors.desc5"
             ></skijasi-editor>
 
-          </vs-row>
+
+       
+
+          </vs-row>     <vs-row  style="padding-top: 3rem !important;">
+          <vs-col vs-w="12" class="mb-3"  v-if="selectedCategoryName.trim() == 'Događanja'">
+  <skijasi-upload-image-dogadaji-galerija
+    v-model="product.galleryimages"
+    size="12"
+    :label="'Galerija slika'"
+    :placeholder="'Dodajte slike za galeriju'"
+    :alert="errors.galleryimages"
+    multiple
+    style="margin-bottom: 8px !important;"
+  ></skijasi-upload-image-dogadaji-galerija>
+</vs-col>     </vs-row>
         </vs-card>
       </vs-col>
       <vs-col vs-lg="12">
@@ -425,6 +439,8 @@ export default {
       desc4: "",
       desc5: "",
       formId: "",
+
+      galleryimages: [],
     },
     
     addProductDetail: {
@@ -663,6 +679,7 @@ export default {
                 delete this.product.datum_pocetka;
                 delete this.product.datum_kraja;
                 delete this.product.formId;
+                delete this.product.galleryimages;
             } else{
                  // Format the datum_pocetka and datum_kraja using moment
       if (this.product.datum_pocetka) {
@@ -674,7 +691,7 @@ export default {
 
 
           this.$api.skijasiProduct
-            .edit({ ...this.product, items: this.items, id: this.$route.params.id })
+            .edit({ ...this.product, items: this.items, id: this.$route.params.id,  galleryimages: this.product.galleryimages})
             .then((response) => {
               this.$closeLoader();
          
