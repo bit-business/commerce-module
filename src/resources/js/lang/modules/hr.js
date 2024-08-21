@@ -119,27 +119,27 @@ export default {
           },
         },
         edit: {
-          title: "Uredi detalje proizvoda",
+          title: "Uredi plaćanje",
           field: {
             name: {
-              title: "Naziv detalja proizvoda",
-              placeholder: "Naziv detalja proizvoda",
+              title: "Naziv statusa",
+              placeholder: "Naziv statusa",
             },
             quantity: {
-              title: "Zaliha proizvoda",
-              placeholder: "Zaliha proizvoda",
+              title: "Količina",
+              placeholder: "Količina",
             },
             price: {
-              title: "Cijena proizvoda",
-              placeholder: "Cijena proizvoda",
+              title: "Cijena",
+              placeholder: "Cijena",
             },
             SKU: {
               title: "SKU detalja proizvoda",
               placeholder: "SKU detalja proizvoda",
             },
             productImage: {
-              title: "Slika detalja proizvoda",
-              placeholder: "Slika detalja proizvoda",
+              title: "Slika",
+              placeholder: "Slika",
             },
             discount: {
               title: "Popust",
@@ -154,13 +154,13 @@ export default {
       },
     },
     detail: {
-      title: "Detalji proizvoda",
+      title: "Detalji plaćanja",
       header: {
-        name: "Naziv proizvoda",
+        name: "Naziv plaćanja",
         slug: "Slug",
         desc: "Opis",
-        productCategory: "Kategorija proizvoda",
-        productImage: "Slika proizvoda",
+        productCategory: "Kategorija",
+        productImage: "Slikaa",
         createdAt: "Stvoreno",
         updatedAt: "Ažurirano",
         deletedAt: "Obrisano",
@@ -187,7 +187,7 @@ export default {
       },
     },
     browseBin: {
-      title: "Obrisani proizvodi za kategorije proizvoda",
+      title: "Obrisano plaćanje za kategorije",
       header: {
         name: "Naziv kategorije",
         slug: "Slug",
@@ -204,7 +204,7 @@ export default {
       },
     },
     add: {
-      title: "Dodaj kategoriju proizvoda",
+      title: "Dodaj kategoriju",
       field: {
         name: {
           title: "Naziv kategorije",
@@ -234,7 +234,7 @@ export default {
       button: "Spremi",
     },
     edit: {
-      title: "Uredi kategoriju proizvoda",
+      title: "Uredi kategoriju",
       field: {
         name: {
           title: "Naziv kategorije",
@@ -264,7 +264,7 @@ export default {
       button: "Spremi",
     },
     detail: {
-      title: "Detalji kategorije proizvoda",
+      title: "Detalji kategorije",
       header: {
         name: "Naziv kategorije",
         slug: "Slug",
@@ -308,7 +308,7 @@ export default {
       },
     },
     browseBin: {
-      title: "Obrisani proizvodi za popuste",
+      title: "Obrisano plaćanje za popuste",
       header: {
         name: "Naziv popusta",
         desc: "Opis",
