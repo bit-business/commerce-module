@@ -134,11 +134,11 @@ export default {
       products: {
         data: []
       },
-      descriptionItems: [10, 50, 100],
+      descriptionItems: [50, 100, 200],
       totalItem: 0,
       filter: "",
       page: 1,
-      limit: 10,
+      limit: 50,
       orderField: "createdAt",
       orderDirection: "desc",
     }

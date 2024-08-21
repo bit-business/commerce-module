@@ -86,11 +86,11 @@ export default {
       detail: {
         title: "Postavke Plaćanja preko Web-a",
         add: {
-          title: "Dodaj plaćanje/za svaki status",
+          title: "Dodaj plaćanje za svaki status",
           field: {
             name: {
               title: "Naziv statusa",
-              placeholder: "Obavezno točan naziv statusa (npr.Učitelj skijanja)",
+              placeholder: "Naziv statusa za kojeg je cijena (dodati sve)",
             },
             quantity: {
               title: "Količina - Maksimalni broj",
@@ -110,7 +110,7 @@ export default {
             },
             discount: {
               title: "Popust",
-              placeholder: "nije obavezno",
+              placeholder: "Nije obavezno",
             },
           },
           button: {

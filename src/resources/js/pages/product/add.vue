@@ -54,7 +54,7 @@
               <skijasi-upload-image-dogadaji
                 v-model="product.productImage"
                 size="12"
-                :label="'Slika naslovna koja će biti prikazana'"
+                :label="'Odaberi sliku koja će biti prikazana'"
                 :placeholder="'Obavezno dodati'"
                 :alert="errors.productImage"
                 style="margin-bottom: 8px !important;"
@@ -283,15 +283,16 @@
 
       <vs-popup :title="$t('product.add.detail.add.title')" :active.sync="productDetailDialog">
         <vs-row>
-          <vs-col vs-w="6" class="mb-3">
-            <skijasi-text
-              v-model="addProductDetail.name"
-              size="12"
-              :label="$t('product.add.detail.add.field.name.title')"
-              :placeholder="$t('product.add.detail.add.field.name.placeholder')"
-              :alert="errors.name"
-              style="margin-bottom: 8px !important;"
-            ></skijasi-text>
+          <vs-col vs-w="12" class="mb-3">
+            <skijasi-select
+  v-model="addProductDetail.name"
+  size="12"
+  :label="$t('product.add.detail.add.field.name.title')"
+  :placeholder="$t('product.add.detail.add.field.name.placeholder')"
+  :items="productDetailNazivi"
+  :alert="errors.name"
+  style="margin-bottom: 8px !important;"
+></skijasi-select>
             <template v-if="$v.addProductDetail.$dirty">
               <span class="danger" v-if="$v.addProductDetail.name.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
@@ -343,7 +344,7 @@
             :alert="errors.discountId"
             :items="discounts"
           ></skijasi-select>
-          <vs-col vs-w="6" class="mb-3">
+          <!-- <vs-col vs-w="6" class="mb-3">
             <skijasi-upload-image-dogadaji
               v-model="addProductDetail.productImage"
               size="12"
@@ -355,7 +356,7 @@
             <template v-if="$v.addProductDetail.$dirty">
               <span class="danger" v-if="$v.addProductDetail.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
-          </vs-col>
+          </vs-col> -->
           <vs-col vs-w="12" vs-type="flex" vs-justify="flex-end">
             <vs-button type="relief" color="primary" class="ml-2" @click="addProductDetailToProduct">
               {{ $t('product.add.detail.add.button.save') }}
@@ -366,15 +367,16 @@
 
       <vs-popup :title="$t('product.add.detail.edit.title')" :active.sync="editProductDetailDialog">
         <vs-row>
-          <vs-col vs-w="6" class="mb-3">
-            <skijasi-text
-              v-model="editProductDetail.name"
-              size="12"
-              :label="$t('product.add.detail.edit.field.name.title')"
-              :placeholder="$t('product.add.detail.edit.field.name.placeholder')"
-              :alert="errors.name"
-              style="margin-bottom: 8px !important;"
-            ></skijasi-text>
+          <vs-col vs-w="12" class="mb-3">
+            <skijasi-select
+  v-model="editProductDetail.name"
+  size="12"
+  :label="$t('product.add.detail.edit.field.name.title')"
+  :placeholder="$t('product.add.detail.edit.field.name.placeholder')"
+  :items="productDetailNazivi"
+  :alert="errors.name"
+  style="margin-bottom: 8px !important;"
+></skijasi-select>
             <template v-if="$v.editProductDetail.$dirty">
               <span class="danger" v-if="$v.editProductDetail.name.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
@@ -426,7 +428,7 @@
             :alert="errors.discountId"
             :items="discounts"
           ></skijasi-select>
-          <vs-col vs-w="6" class="mb-3">
+          <!-- <vs-col vs-w="6" class="mb-3">
             <skijasi-upload-image-dogadaji
               v-model="editProductDetail.productImage"
               size="12"
@@ -438,7 +440,7 @@
             <template v-if="$v.editProductDetail.$dirty">
               <span class="danger" v-if="$v.editProductDetail.productImage.$anyError">{{ $t('vuelidate.error') }}</span>
             </template>
-          </vs-col>
+          </vs-col> -->
           <vs-col vs-w="12" vs-type="flex" vs-justify="flex-end">
             <vs-button type="relief" color="primary" class="ml-2" @click="editProductDetailToProduct">
               {{ $t('product.add.detail.edit.button.save') }}
@@ -488,7 +490,7 @@ export default {
       quantity: '0',
       price: '0',
       SKU: null,
-      productImage: ''
+      // productImage: ''
     },
     editProductDetail: {
       discountId: '',
@@ -496,7 +498,7 @@ export default {
       quantity: '0',
       price: '0',
       SKU: null,
-      productImage: ''
+      // productImage: ''
     },
     categories: [],
     discounts: [],
@@ -506,6 +508,18 @@ export default {
     deleteProductDetailDialog: false,
     willEditId: null,
     willDeleteId: null,
+
+    productDetailNazivi: [
+    { label: 'Učitelj skijanja', value: 'Učitelj skijanja' },
+    { label: 'ISIA učitelj', value: 'ISIA učitelj' },
+    { label: 'Snowboard učitelj', value: 'Snowboard učitelj' },
+    { label: 'Voditelj skijanja', value: 'Voditelj skijanja' },
+    { label: 'Trener skijanja', value: 'Trener skijanja' },
+    { label: 'Demonstrator skijanja', value: 'Demonstrator skijanja' },
+    { label: 'Snowboard demonstrator', value: 'Snowboard demonstrator' },
+    { label: 'Nije član', value: 'Nije član' },
+  ],
+    
   }),
   validations() {
     return {
@@ -540,9 +554,9 @@ export default {
         // SKU: {
         //   required
         // },
-        productImage: {
-          required
-        }
+        // productImage: {
+        //   required
+        // }
       },
       addProductDetail: {
         name: {
@@ -561,9 +575,9 @@ export default {
         // SKU: {
         //   required
         // },
-        productImage: {
-          required
-        }
+        // productImage: {
+        //   required
+        // }
       }
     };
   },
@@ -736,19 +750,30 @@ export default {
     addProductDetailToProduct() {
       this.$v.addProductDetail.$touch()
 
-      if (!this.$v.addProductDetail.$invalid) {
-        this.items.push({ ...this.addProductDetail })
-        this.productDetailDialog = false
-      }
+      
+  if (!this.$v.addProductDetail.$invalid) {
+    // Add the main product image to the detail
+    const newProductDetail = { 
+      ...this.addProductDetail, 
+      productImage: this.product.productImage 
+    };
+    this.items.push(newProductDetail);
+    this.productDetailDialog = false;
+  }
     },
     editProductDetailToProduct() {
       this.$v.editProductDetail.$touch()
 
       if (!this.$v.editProductDetail.$invalid) {
-        this.$v.editProductDetail.$reset()
-        this.$set(this.items, this.willEditId, this.editProductDetail)
-        this.editProductDetailDialog = false
-      }
+    this.$v.editProductDetail.$reset()
+    // Ensure the main product image is used
+    const updatedProductDetail = { 
+      ...this.editProductDetail, 
+      productImage: this.product.productImage 
+    };
+    this.$set(this.items, this.willEditId, updatedProductDetail);
+    this.editProductDetailDialog = false;
+  }
     },
     clearSelection() {
       this.$v.addProductDetail.$reset()
