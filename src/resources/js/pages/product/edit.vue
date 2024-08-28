@@ -479,7 +479,7 @@ export default {
     { label: 'Voditelj skijanja', value: 'Voditelj skijanja' },
     { label: 'Trener skijanja', value: 'Trener skijanja' },
     { label: 'Demonstrator skijanja', value: 'Demonstrator skijanja' },
-    { label: 'Snowboard demonstrator', value: 'Snowboard demonstrator' },
+    { label: 'Snowboard demonstrator', value: 'Snowboard Demonstrator' },
     { label: 'Počasni član', value: 'Počasni član' },
     { label: 'Podupirući član', value: 'Podupirući član' },
     { label: 'Snowboard Trener', value: 'Snowboard Trener' },
