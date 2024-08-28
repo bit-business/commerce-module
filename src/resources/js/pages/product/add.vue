@@ -510,6 +510,7 @@ export default {
     willDeleteId: null,
 
     productDetailNazivi: [
+    { label: 'Grupno skijanje', value: 'Grupno skijanje' },
     { label: 'Učitelj skijanja', value: 'Učitelj skijanja' },
     { label: 'ISIA učitelj', value: 'ISIA učitelj' },
     { label: 'Snowboard učitelj', value: 'Snowboard učitelj' },
@@ -517,6 +518,9 @@ export default {
     { label: 'Trener skijanja', value: 'Trener skijanja' },
     { label: 'Demonstrator skijanja', value: 'Demonstrator skijanja' },
     { label: 'Snowboard demonstrator', value: 'Snowboard demonstrator' },
+    { label: 'Počasni član', value: 'Počasni član' },
+    { label: 'Podupirući član', value: 'Podupirući član' },
+    { label: 'Snowboard Trener', value: 'Snowboard Trener' },
     { label: 'Nije član', value: 'Nije član' },
   ],
     

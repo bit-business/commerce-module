@@ -472,6 +472,7 @@ export default {
     willDeleteId: null,
 
     productDetailNazivi: [
+    { label: 'Grupno skijanje', value: 'Grupno skijanje' },
     { label: 'Učitelj skijanja', value: 'Učitelj skijanja' },
     { label: 'ISIA učitelj', value: 'ISIA učitelj' },
     { label: 'Snowboard učitelj', value: 'Snowboard učitelj' },
@@ -479,6 +480,9 @@ export default {
     { label: 'Trener skijanja', value: 'Trener skijanja' },
     { label: 'Demonstrator skijanja', value: 'Demonstrator skijanja' },
     { label: 'Snowboard demonstrator', value: 'Snowboard demonstrator' },
+    { label: 'Počasni član', value: 'Počasni član' },
+    { label: 'Podupirući član', value: 'Podupirući član' },
+    { label: 'Snowboard Trener', value: 'Snowboard Trener' },
     { label: 'Nije član', value: 'Nije član' },
   ],
 
@@ -543,13 +547,15 @@ export default {
       }
     };
   },
-  mounted() {
-    this.getProductDetail();
-    this.getProductCategoryList();
-    this.getProductDiscounts();
-    this.getForms();
- 
-  },
+
+  async created() {
+  await this.getProductCategoryList();
+  await this.getProductDetail();
+  this.updateCategoryName();
+  this.getProductDiscounts();
+  this.getForms();
+},
+
   computed: {
   availableForms() {
     return this.forms.items.map(form => ({
@@ -568,13 +574,24 @@ export default {
     }
   
 },
+watch: {
+  'product.productCategoryId': {
+    handler(newVal) {
+      this.updateCategoryName();
+    },
+    immediate: true
+  }
+},
+
   methods: {
     updateCategoryName() {
-    const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
-    this.selectedCategoryName = selectedCategory ? selectedCategory.label : '';
-    console.log("TEST1:", selectedCategory);
-    console.log("TEST12:",  this.selectedCategoryName);
-    },  
+  const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
+  this.selectedCategoryName = selectedCategory ? selectedCategory.label : '';
+  this.$nextTick(() => {
+    // Force component update
+    this.$forceUpdate();
+  });
+},
 
 
     async getForms() {
@@ -632,7 +649,7 @@ export default {
         });
       });
     },
-    getProductCategoryList() {
+    async getProductCategoryList() {
       this.$openLoader();
       this.$api.skijasiProductCategory
       .browse()
@@ -644,7 +661,7 @@ export default {
             value: category.id
           }
         });
-        this.updateCategoryName();
+       
       })
       .catch((error) => {
         this.$closeLoader();
