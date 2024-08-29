@@ -15,7 +15,7 @@ use NadzorServera\Skijasi\Module\Commerce\Models\OrderDetail;
 use NadzorServera\Skijasi\Module\Commerce\Models\OrderPayment;
 
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
-
+use NadzorServera\Skijasi\Theme\CommerceTheme\Models\Form;
 
 use Illuminate\Support\Facades\DB;
 
@@ -292,13 +292,22 @@ public function updateStaroPlacanje($orderId)
                         ]); }
 
                        else {
-                            DB::table('tbl_payments')
-                            ->where('id', $cartItem->tblpaymentsid)
-                            ->update([
-                                'paidstatus' => 1,
-                                'paidvalue' => DB::raw('price'),
-                                'paydate' => now()
-                            ]);
+                           // Update existing payment record
+                $payment = DB::table('tbl_payments')
+                ->where('id', $cartItem->tblpaymentsid)
+                ->first();
+
+            if ($payment) {
+                DB::table('tbl_payments')
+                    ->where('id', $cartItem->tblpaymentsid)
+                    ->update([
+                        'paidstatus' => 1,
+                        'paidvalue' => $payment->price, // Use the price from the payment record
+                        'paydate' => now()
+                    ]);
+
+            }
+        
                         }
         }
     }
@@ -321,6 +330,17 @@ public function done(Request $request)
         $this->deleteCartItems($order->id);
 
         event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'done'));
+
+        
+
+        
+
+        DB::table('skijasi_form_entries')
+        ->where('hzutsid', $order->user_id)
+        ->whereNull('placeno')
+        ->orderBy('created_at', 'desc')  // or use 'id' if that's the case
+        ->limit(1)
+        ->update(['placeno' => $order->payed]);
 
         return ApiResponse::success();
 
