@@ -340,7 +340,10 @@ public function done(Request $request)
         ->whereNull('placeno')
         ->orderBy('created_at', 'desc')  // or use 'id' if that's the case
         ->limit(1)
-        ->update(['placeno' => $order->payed]);
+        ->update([
+            'placeno' => $order->payed,
+            'brojnarudzbe' => $order->id
+        ]);
 
         return ApiResponse::success();
 
