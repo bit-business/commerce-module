@@ -16,6 +16,7 @@ use NadzorServera\Skijasi\Module\Commerce\Models\OrderPayment;
 
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
 use NadzorServera\Skijasi\Theme\CommerceTheme\Models\Form;
+use NadzorServera\Skijasi\Helpers\GetData;
 
 use Illuminate\Support\Facades\DB;
 
@@ -333,17 +334,29 @@ public function done(Request $request)
 
         
 
-        
+        $user = User::find($order->user_id);
 
-        DB::table('skijasi_form_entries')
-        ->where('hzutsid', $order->user_id)
-        ->whereNull('placeno')
-        ->orderBy('created_at', 'desc')  // or use 'id' if that's the case
-        ->limit(1)
-        ->update([
-            'placeno' => $order->payed,
-            'brojnarudzbe' => $order->id
-        ]);
+        if ($user) {
+            $paymentData = GetData::fetchPaymentDataForMember($user->id);
+            $statusPlacanja = GetData::calculatePaymentStatus($paymentData);
+
+            DB::table('skijasi_form_entries')
+                ->where('hzutsid', $order->user_id)
+                ->whereNull('placeno')
+                ->orderBy('created_at', 'desc')
+                ->limit(1)
+                ->update([
+                    'placeno' => $order->payed . '€, ' . $statusPlacanja,
+                    'brojnarudzbe' => $order->id
+                ]);
+
+            event(new OrderStateWasChanged($user, $order, 'done'));
+        } else {
+            \Log::error("User not found for order ID: " . $order->id);
+        }
+
+
+
 
         return ApiResponse::success();
 

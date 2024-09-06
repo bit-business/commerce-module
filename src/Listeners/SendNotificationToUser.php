@@ -25,14 +25,12 @@ class SendNotificationToUser
         }, function ($query) {
             return $query;
         })->firstOrFail();
-
+    
         $status = $event->status;
         $title = null;
         $content = null;
         $is_read = 0;
-
-        
-
+    
         switch ($status) {
             case 'waitingBuyerPayment':
                 $title = 'Uspješno ste napravili narudžbu';
@@ -57,9 +55,9 @@ class SendNotificationToUser
                 break;
             case 'done':
                 $title = 'Vaša kupnja je potvrđena';
-                $content = "Vaša narudžba na HZUTS web stranici pod brojem: {$event->order->id} je upješno potvrđena. Hvala Vam na kupnji!";
-                 // Send admin message
-                 $this->sendAdminMessage($event->user->id, $title, $content);
+                $content = "Vaša narudžba na HZUTS web stranici pod brojem: {$event->order->id} je uspješno potvrđena. Hvala Vam na kupnji!";
+                // Send admin message
+                $this->sendAdminMessage($event->user->id, $title, $content);
                 break;
             case 'cancel':
                 $title = 'Narudžba je odbijena';
@@ -68,17 +66,28 @@ class SendNotificationToUser
             default:
                 return;
         }
-
-  
-            if ($status === 'waitingBuyerPayment' && $event->pdfPath) {
-              
-                Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content, $event->pdfPath));
-              
-            } else {
-                Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content));
-            }
-
-
+    
+        // Check for existing notifications within the last 2 minutes
+        $existingNotification = Notification::where('receiver_user_id', $event->user->id)
+            ->where('type', 'orderNotification')
+            ->where('title', $title)
+            ->where('content', $content)
+            ->where('created_at', '>=', now()->subMinutes(1)) // Only check notifications sent within the last 2 minutes
+            ->first();
+    
+        // If a notification was sent within the last 2 minutes, do not send another email
+        if ($existingNotification) {
+            return;
+        }
+    
+        // Send the email
+        if ($status === 'waitingBuyerPayment' && $event->pdfPath) {
+            Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content, $event->pdfPath));
+        } else {
+            Mail::to($event->user->email)->send(new MailNotificationOrder($event->user, $title, $content));
+        }
+    
+        // Log the notification to the database
         Notification::create([
             'receiver_user_id' => $event->user->id,
             'type' => 'orderNotification',
@@ -88,6 +97,7 @@ class SendNotificationToUser
             'sender_user_id' => $sender_user->id,
         ]);
     }
+    
 
 
     private function sendAdminMessage($userId, $title, $content)
