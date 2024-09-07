@@ -134,23 +134,34 @@ class ProductController extends Controller
         } catch (Exception $e) {
             DB::rollback();
 
+            $errorMessage = $e->getMessage();
+            $errorCode = $e->getCode();
+            $errorTrace = $e->getTraceAsString();
+
+            \Log::error("Product creation failed: {$errorMessage}", [
+                'code' => $errorCode,
+                'trace' => $errorTrace,
+                'request' => $request->all()
+            ]);
+
             return ApiResponse::failed($e);
         }
     }
 
     private function generateSlug($name)
-                {
-                    $base = Str::slug(strtolower($name));
-                    $slug = $base;
-                    $counter = 1;
+    {
+        $base = Str::slug(strtolower($name));
+        $slug = $base;
+        $counter = 1;
+    
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+    
+        return $slug;
+    }
 
-                    while (Product::where('slug', $slug)->exists()) {
-                        $slug = $base . '-' . $counter;
-                        $counter++;
-                    }
-
-                    return strtolower($slug);
-                }
 
     public function restore(Request $request)
     {
