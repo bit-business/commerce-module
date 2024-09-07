@@ -7,7 +7,7 @@
           <div slot="header">
             <h3>Postavke za Plaćanje</h3>
           </div>
-          <vs-row class="gapredovi">
+          <vs-row>
   
            
 
@@ -15,6 +15,7 @@
               <skijasi-upload-image-dogadaji
                 v-model="product.productImage"
                 size="12"
+                   class="custom-label"
                 :label="'Slika'"
                 :placeholder="'obavezno'"
                 :alert="errors.productImage"
@@ -30,6 +31,7 @@
               <skijasi-text
                 v-model="product.name"
                 size="12"
+                   class="custom-label"
                 :label="$t('product.add.field.name.title')"
                 :placeholder="$t('product.add.field.name.placeholder')"
                 :alert="errors.name"
@@ -46,6 +48,7 @@
           v-model="formIdString"
             :items="availableForms"
             size="12"
+               class="custom-label"
             :label="'Prijavnica za događaj'"
             :placeholder="'Odaberi prijavnicu za seminar (stvorit prije u meniju pod Prijavnice)'"
             :alert="errors.formId"
@@ -61,6 +64,7 @@
               <skijasi-text
                 v-model="product.mjesto"
                 size="12"
+                   class="custom-label"
                 :label="'Mjesto događaja'"
                 :placeholder="'Unesi mjesto događaja (obavezno)'"
                 :alert="errors.mjesto"
@@ -76,6 +80,7 @@
                 v-model="product.datumPocetka"
                 value-zone="local"
                 size="12"
+                   class="custom-label"
                 :label="'Datum početka događaja'"    
                 :alert="errors.datum_pocetka"
                 style="margin-bottom: 8px !important;"
@@ -90,6 +95,7 @@
                 v-model="product.datumKraja"
                 value-zone="local"
                 size="12"
+                   class="custom-label"
                 :label="'Datum kraja događaja'"
                 :alert="errors.datum_kraja"
                 style="margin-bottom: 8px !important;"
@@ -107,6 +113,7 @@
               editorId="editor1"
               v-model="product.desc"
               size="12"
+                 class="custom-label"
               :label="'Tekst za rubriku O SKIJALIŠTU'"
               :placeholder="'Tekst za rubriku O SKIJALIŠTU'"
               :alert="errors.desc"
@@ -116,6 +123,7 @@
               editorId="editor2"
               v-model="product.desc2"
               size="12"
+                 class="custom-label"
               :label="'Tekst za rubriku INFORMACIJE'"
               :placeholder="'Tekst za rubriku INFORMACIJE'"
               :alert="errors.desc2"
@@ -124,6 +132,7 @@
             editorId="editor3"
               v-model="product.desc3"
               size="12"
+                 class="custom-label"
               :label="'Tekst za rubriku SMJEŠTAJ'"
               :placeholder="'Tekst za rubriku SMJEŠTAJ'"
               :alert="errors.desc3"
@@ -132,6 +141,7 @@
             editorId="editor4"
               v-model="product.desc4"
               size="12"
+                 class="custom-label"
               :label="'Tekst za rubriku PRIJEVOZ'"
               :placeholder="'Tekst za rubriku PRIJEVOZ'"
               :alert="errors.desc4"
@@ -140,6 +150,7 @@
             editorId="editor5"
               v-model="product.desc5"
               size="12"
+                 class="custom-label"
               :label="'Tekst za rubriku PLAĆANJE'"
               :placeholder="'Tekst za rubriku PLAĆANJE'"
               :alert="errors.desc5"
@@ -153,6 +164,7 @@
   <skijasi-upload-image-dogadaji-galerija
     v-model="product.galleryimages"
     size="12"
+       class="custom-label"
     :label="'Galerija slika'"
     :placeholder="'Dodajte slike za galeriju'"
     :alert="errors.galleryimages"
@@ -874,4 +886,19 @@ watch: {
  gap: 1.2rem !important;
  font-weight: bold;
 }
+
+.custom-label .skijasi-text__label,
+.custom-label .skijasi-select__label,
+.custom-label .skijasi-upload-image-dogadaji__label,
+.custom-label .skijasi-date__label,
+.custom-label .skijasi-editor__label {
+  font-size: 1.1rem; /* Adjust as needed */
+  font-weight: bold;
+}
+
+ .vs-select--label {
+  font-size: 1.1rem !important; /* Adjust size as needed */
+  font-weight: bold !important; /* Make the font bold */
+}
+
 </style>
