@@ -134,16 +134,6 @@ class ProductController extends Controller
         } catch (Exception $e) {
             DB::rollback();
 
-            $errorMessage = $e->getMessage();
-            $errorCode = $e->getCode();
-            $errorTrace = $e->getTraceAsString();
-
-            \Log::error("Product creation failed: {$errorMessage}", [
-                'code' => $errorCode,
-                'trace' => $errorTrace,
-                'request' => $request->all()
-            ]);
-
             return ApiResponse::failed($e);
         }
     }
