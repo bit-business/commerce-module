@@ -243,7 +243,7 @@ public function updateStaroPlacanje($orderId)
        
 
     
-        if ($orderDetail->product_detail_id == 13)  {
+        if ($orderDetail->product_detail_id == 10)  {
                 DB::table('tbl_payments')->insert([
                     'idmember' => $cartItem->user_id,
                     'callnumber' => $cartItem->user_id, 
@@ -259,7 +259,7 @@ public function updateStaroPlacanje($orderId)
                     'updated_at' => now(),
                 
                 ]); }
-                else if ($orderDetail->product_detail_id == 10)  {
+                else if ($orderDetail->product_detail_id == 12)  {
                     DB::table('tbl_payments')->insert([
                         'idmember' => $cartItem->user_id, 
                         'callnumber' => $cartItem->user_id, 
@@ -275,7 +275,7 @@ public function updateStaroPlacanje($orderId)
                         'updated_at' => now(),
                     
                     ]); }
-                    else if ($orderDetail->product_detail_id == 14)  {
+                    else if ($orderDetail->product_detail_id == 11)  {
                         DB::table('tbl_payments')->insert([
                             'idmember' => $cartItem->user_id, 
                             'callnumber' => $cartItem->user_id, 
