@@ -10,20 +10,20 @@
           </div>
           <div>
             <skijasi-server-side-table
-              v-model="selected"
-              :data="carts.data"
-              stripe
-              :pagination-data="carts"
-              :description-items="descriptionItems"
-              :description-title="$t('cart.browse.footer.descriptionTitle')"
-              :description-connector="$t('cart.browse.footer.descriptionConnector')"
-              :description-body="$t('cart.browse.footer.descriptionBody')"
-              @search="handleSearch"
-              @changePage="handleChangePage"
-              @changeLimit="handleChangeLimit"
-              @select="handleSelect"
-              @sort="handleSort"
-            >
+  v-model="selected"
+  :data="carts.data"
+  stripe
+  :pagination-data="carts"
+  :description-items="descriptionItems"
+  :description-title="$t('cart.browse.footer.descriptionTitle')"
+  :description-connector="$t('cart.browse.footer.descriptionConnector')"
+  :description-body="$t('cart.browse.footer.descriptionBody')"
+  @search="handleSearch"
+  @changePage="handleChangePage"
+  @changeLimit="handleChangeLimit"
+  @select="handleSelect"
+  @sort="handleSort"
+>
               <template slot="thead" style="text-align: center;">
                 <vs-th> </vs-th>
                 <skijasi-th sort-key="id"> {{ $t("cart.browse.header.id") }} </skijasi-th>
@@ -149,23 +149,25 @@ export default {
       editModal: false,
     editForm: {
       id: null,
-      quantity: 0,
+      quantity: '0',
       product_detail_id: 0,
     },
 
     productDetails: [],
 
+    search: "",
+
 
       selected: [],
       carts: {
-        data: []
-      },
+      data: [],
+    },
       descriptionItems: [10, 50, 100],
       totalItem: 0,
       filter: "",
       page: 1,
       limit: 10,
-      orderField: "updated_at",
+      orderField: "id",  // Change this from "updated_at" to "id"
       orderDirection: "desc",
     }
   },
@@ -179,6 +181,12 @@ export default {
         filteredProductDetails() {
     return this.productDetails.filter(detail => detail.id !== this.editForm.product_detail_id);
   },
+
+  tableData() {
+    return this.carts.data || [];
+  },
+
+
       },
       watch: {
   editModal(newVal) {
@@ -258,18 +266,27 @@ editCart(cart) {
     getCartList() {
   this.$openLoader();
   this.$api.skijasiCart
-    .browse({ 
-      limit: this.limit, 
-      page: this.page, 
-      relation: 'productDetail.product,user' 
+    .browse({
+      limit: this.limit,
+      page: this.page,
+      relation: 'productDetail.product,user',
+      search: this.search,
+      order_field: this.$caseConvert.snake(this.orderField),
+      order_direction: this.$caseConvert.snake(this.orderDirection),
     })
     .then((response) => {
       this.$closeLoader();
       this.selected = [];
-      this.carts = response.data.carts;
+      if (response.data && response.data.carts) {
+        this.carts = response.data.carts;
+      } else {
+        console.error('Unexpected response structure:', response);
+        this.carts = { data: [] };
+      }
     })
     .catch((error) => {
       this.$closeLoader();
+      console.error('Error fetching cart data:', error);
       this.$vs.notify({
         title: this.$t("alert.danger"),
         text: error.message,
@@ -277,29 +294,25 @@ editCart(cart) {
       });
     });
 },
-    handleSearch(e) {
-      this.filter = e.target.value;
-      this.page = 1;
-      this.getCartList();
-    },
-    handleChangePage(page) {
-      this.page = page;
-      this.getCartList();
-    },
-    handleChangeLimit(limit) {
-      this.page = 1;
-      this.limit = limit;
-      this.getCartList();
-    },
-    handleSort(field, direction) {
-      this.orderField = field;
-      this.orderDirection = direction;
-      this.getCartList();
-    },
-    handleSelect(data) {
-      this.selected = data;
-    },
-
+handleSearch(e) {
+  this.search = e.target.value;
+  this.page = 1;
+  this.getCartList();
+},
+handleChangePage(page) {
+  this.page = page;
+  this.getCartList();
+},
+handleChangeLimit(limit) {
+  this.page = 1;
+  this.limit = limit;
+  this.getCartList();
+},
+handleSort(field, direction) {
+  this.orderField = field;
+  this.orderDirection = direction;
+  this.getCartList();
+},
 
     
 

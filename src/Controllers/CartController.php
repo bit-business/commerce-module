@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use NadzorServera\Skijasi\Controllers\Controller;
 use NadzorServera\Skijasi\Helpers\ApiResponse;
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
+use NadzorServera\Skijasi\Models\UserRole;
 
 class CartController extends Controller
 {
@@ -17,16 +18,46 @@ class CartController extends Controller
                 'page' => 'sometimes|required|integer',
                 'limit' => 'sometimes|required|integer',
                 'relation' => 'nullable',
+                'search' => 'nullable|string',
+                'order_field' => 'nullable|string',
+                'order_direction' => 'nullable|string|in:desc,asc',
             ]);
     
-            $relations = $request->relation ? explode(',', $request->relation) : [];
-            $relations[] = 'productDetail.product'; // Add this line
+            $userId = auth()->user()->id;
+            $userRole = UserRole::where('user_id', $userId)->get();
+            $roleId = $userRole->pluck('role_id')->first();
+            $orderField = $request->order_field ?? 'id';
+            $orderDirection = $request->order_direction ?? 'asc';
+            $search = $request->search;
     
-            if ($request->has('page') || $request->has('limit')) {
-                $carts = Cart::with($relations)->paginate($request->limit ?? 10);
-            } else {
-                $carts = Cart::with($relations)->get();
+            $query = Cart::when($request->relation, function ($query) use ($request) {
+                return $query->with(explode(',', $request->relation));
+            });
+    
+            if (!in_array($roleId, [1, 4])) {
+                $query->where('user_id', auth()->user()->id);
             }
+    
+            if ($search) {
+                $searchTerms = explode(' ', $search);
+                $query->where(function ($query) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $query->where(function ($query) use ($term) {
+                            $query->where('id', 'LIKE', "%{$term}%")
+                                ->orWhereHas('user', function ($q) use ($term) {
+                                    $q->where('username', 'LIKE', "%{$term}%")
+                                      ->orWhere('name', 'LIKE', "%{$term}%");
+                                })
+                                ->orWhereHas('productDetail.product', function ($q) use ($term) {
+                                    $q->where('name', 'LIKE', "%{$term}%");
+                                });
+                        });
+                    }
+                });
+            }
+    
+            $carts = $query->orderBy($orderField, $orderDirection)
+                           ->paginate($request->limit ?? 10);
     
             $data['carts'] = $carts->toArray();
             return ApiResponse::success($data);

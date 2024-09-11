@@ -14,8 +14,8 @@ class SkijasiCommerceModuleEventServiceProvider extends EventServiceProvider
         OrderStateWasChanged::class => [
             SendNotificationToUser::class,
         ],
-        GoogleAnalytics::class => [
-            SendHit::class,
-        ],
+        // GoogleAnalytics::class => [
+        //     SendHit::class,
+        // ],
     ];
 }

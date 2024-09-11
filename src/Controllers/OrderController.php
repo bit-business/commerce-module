@@ -350,7 +350,6 @@ public function done(Request $request)
                     'brojnarudzbe' => $order->id
                 ]);
 
-            event(new OrderStateWasChanged($user, $order, 'done'));
         } else {
             \Log::error("User not found for order ID: " . $order->id);
         }
