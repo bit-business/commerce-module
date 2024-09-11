@@ -372,22 +372,24 @@ class OrderController extends Controller
             DB::beginTransaction();
     
             $order = Order::where('user_id', auth()->user()->id)
-                ->where('id', $request->order_id)
-                ->firstOrFail();
+            ->where('id', $request->order_id)
+            ->firstOrFail();
 
 
     
     
     
             // if ($order->status == 'waitingBuyerPayment' && now()->lessThan(Carbon::create($order->expired_at))) {
-
-            $order_payments = OrderPayment::where('order_id', $order->id)->first();
          
     
+            $order_payments = OrderPayment::where('order_id', $order->id)->first();
+         
+            $uploaded_path = UploadImage::createImagePotvrda($request->proof_of_transaction, 'uplatnice/potvrde/', $order->id);
 
-       $uploaded_path = UploadImage::createImagePotvrda($request->proof_of_transaction, 'uplatnice/potvrde/');
+            if ($uploaded_path === null) {
+                throw new Exception('Failed to upload proof of transaction');
+            }
 
-                Log::info('Order payment fetched', ['order_payment' => $order_payments]); // Log the fetched order payment
     
                 $order_payments->source_bank = $request->source_bank;
                 $order_payments->destination_bank = $request->destination_bank;
@@ -398,7 +400,6 @@ class OrderController extends Controller
 
                 $order_payments->save();
     
-                Log::info('Order payment updated', ['order_payment' => $order_payments]); // Log the updated order payment
     
                 
               //  $uploaded_path = $url;

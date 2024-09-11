@@ -13,10 +13,8 @@ class UploadImage
 {
 
 
-    public static function createImagePotvrda($base64, $path = '')
+    public static function createImagePotvrda($base64, $path = '', $orderId)
     {
-        // base 64 format file : data:image/jpeg;base64,/9j/4AA....
-
         try {
             $file_parts = explode(';base64,', $base64);
             if (count($file_parts) < 2) {
@@ -24,20 +22,27 @@ class UploadImage
             }
     
             $file_type_aux = explode('/', $file_parts[0]);
-            $file_type = end($file_type_aux);  
+            $file_type = strtolower(end($file_type_aux));
+    
+            // Check if it's a PDF
+            if ($file_type == 'pdf') {
+                $extension = 'pdf';
+            } else {
+                // For images, use the original extension
+                $extension = $file_type;
+            }
+    
             $file_base64 = base64_decode($file_parts[1]);
-            $orderid = 123;
-
-            $file ='uplatnice/potvrde/' . $orderid . '.' . $file_type;
-
+    
+            $file = 'uplatnice/potvrde/' . $orderId . '.' . $extension;
+    
             if (Storage::put($file, $file_base64)) {
                 return $file;
             } else {
                 return null;
             }
-
-            return $file;
         } catch (Exception $e) {
+            Log::error('Error in createImagePotvrda: ' . $e->getMessage());
             return null;
         }
     }

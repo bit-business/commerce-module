@@ -160,13 +160,30 @@
               <th>{{ $t("orders.confirm.header.orderPayment.totalTransfer") }}</th>
               <td>{{ toCurrency(order.orderPayment.totalTransfered) }}</td>
             </tr>
+
+
+
             <tr>
-              <th>{{ $t("orders.confirm.header.orderPayment.proofOfTransaction") }}</th>
-              <td>
-                <img class="w-100" :src="order.orderPayment.proofOfTransaction" alt="" v-if="order.orderPayment.proofOfTransaction">
-                <span v-else>Nema</span>
-              </td>
-            </tr>
+  <th>{{ $t("orders.confirm.header.orderPayment.proofOfTransaction") }}</th>
+  <td>
+    <div v-if="order.orderPayment.proofOfTransaction">
+      <div v-if="isImageFile(order.orderPayment.proofOfTransaction)">
+        <img class="w-100" :src="getFileUrl(order.orderPayment.proofOfTransaction)" alt="Proof of Transaction">
+      </div>
+      <div v-else-if="isPdfFile(order.orderPayment.proofOfTransaction)">
+        <iframe :src="getFileUrl(order.orderPayment.proofOfTransaction)" width="100%" height="500px"></iframe>
+      </div>
+      <div v-else>
+        <a :href="getFileUrl(order.orderPayment.proofOfTransaction)" target="_blank">Pogledaj Potvrdu</a>
+      </div>
+    </div>
+    <span v-else>Nema</span>
+  </td>
+</tr>
+
+
+
+
           </table>
         </vs-card>
       </vs-col>
@@ -274,7 +291,20 @@ export default {
         });
     },
 
+    isImageFile(filename) {
+    return /\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(filename);
+  },
 
+  isPdfFile(filename) {
+    return /\.pdf$/i.test(filename);
+  },
+
+  getFileUrl(filename) {
+    // Assuming your files are stored in the public directory
+    // Adjust this base URL according to your actual file storage location
+    const baseUrl = process.env.VUE_APP_API_BASE_URL || '';
+    return `${baseUrl}/storage/${filename}`;
+  },
 
     
     toCurrency(value) {
@@ -411,3 +441,15 @@ export default {
   },
 };
 </script>
+<style scoped>
+.w-100 {
+  width: 100%;
+  max-width: 500px;
+}
+
+iframe {
+  border: none;
+  width: 100%;
+  height: 500px;
+}
+</style>

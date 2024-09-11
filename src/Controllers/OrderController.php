@@ -232,87 +232,6 @@ class OrderController extends Controller
     }
 }
 
-public function updateStaroPlacanje($orderId)
-{
-    $orderDetails = OrderDetail::where('order_id', $orderId)->get();
-    
-    foreach ($orderDetails as $orderDetail) {
-        $cartItems = Cart::where('product_detail_id', $orderDetail->product_detail_id)->get();
-        foreach ($cartItems as $cartItem) {
-
-       
-
-    
-        if ($orderDetail->product_detail_id == 10)  {
-                DB::table('tbl_payments')->insert([
-                    'idmember' => $cartItem->user_id,
-                    'callnumber' => $cartItem->user_id, 
-                    'idpaygroup' => 3,
-                    'idpaysubgroup' => 80, 
-                    'price' => 10, 
-                    'paidvalue' => 10, 
-                    'opendate' => now(),
-                    'paidstatus' => 1,
-                    'paydate' => now(),
-                    'paymenttitle' => 'Amblem',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                
-                ]); }
-                else if ($orderDetail->product_detail_id == 12)  {
-                    DB::table('tbl_payments')->insert([
-                        'idmember' => $cartItem->user_id, 
-                        'callnumber' => $cartItem->user_id, 
-                        'idpaygroup' => 2,
-                        'idpaysubgroup' => 142, 
-                        'price' => 8, 
-                        'paidvalue' => 8, 
-                        'opendate' => now(),
-                        'paidstatus' => 1,
-                        'paymenttitle' => 'Izdavanje iskaznice',
-                        'paydate' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    
-                    ]); }
-                    else if ($orderDetail->product_detail_id == 11)  {
-                        DB::table('tbl_payments')->insert([
-                            'idmember' => $cartItem->user_id, 
-                            'callnumber' => $cartItem->user_id, 
-                            'idpaygroup' => 3,
-                            'idpaysubgroup' => 80, 
-                            'price' => 5, 
-                            'paidvalue' => 5, 
-                            'opendate' => now(),
-                            'paidstatus' => 1,
-                            'paymenttitle' => 'Potvrda',
-                            'paydate' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                         
-                        ]); }
-
-                       else {
-                           // Update existing payment record
-                $payment = DB::table('tbl_payments')
-                ->where('id', $cartItem->tblpaymentsid)
-                ->first();
-
-            if ($payment) {
-                DB::table('tbl_payments')
-                    ->where('id', $cartItem->tblpaymentsid)
-                    ->update([
-                        'paidstatus' => 1,
-                        'paidvalue' => $payment->price, // Use the price from the payment record
-                        'paydate' => now()
-                    ]);
-
-            }
-        
-                        }
-        }
-    }
-}
 
 public function done(Request $request)
 {
@@ -397,6 +316,91 @@ public function getOrdersPerMonth(Request $request)
     }
 }
 
+
+
+
+
+public function updateStaroPlacanje($orderId)
+{
+    $orderDetails = OrderDetail::where('order_id', $orderId)->get();
+    
+    foreach ($orderDetails as $orderDetail) {
+        $cartItem = Cart::where('product_detail_id', $orderDetail->product_detail_id)
+                        ->where('user_id', $orderDetail->order->user_id)
+                        ->first();
+
+        if ($cartItem) {
+            if (in_array($orderDetail->product_detail_id, [10, 11, 12, 37, 38, 39])) {
+                // Handle special cases (Amblem, Potvrda, Izdavanje iskaznice)
+                $this->insertSpecialPayment($orderDetail, $cartItem);
+            } else {
+                // Update existing payment record
+                $this->updateExistingPayment($cartItem);
+            }
+        }
+    }
+}
+
+private function insertSpecialPayment($orderDetail, $cartItem)
+{
+    $paymentData = [
+        'idmember' => $cartItem->user_id,
+        'callnumber' => $cartItem->user_id,
+        'price' => $orderDetail->price,
+        'paidvalue' => $orderDetail->price,
+        'opendate' => now(),
+        'paidstatus' => 1,
+        'paydate' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+
+    switch ($orderDetail->product_detail_id) {
+        case 10:
+            case 37:
+            $paymentData = array_merge($paymentData, [
+                'idpaygroup' => 6,
+                'idpaysubgroup' => 80,
+                'paymenttitle' => 'Amblem',
+            ]);
+            break;
+        case 11:
+            case 38:
+            $paymentData = array_merge($paymentData, [
+                'idpaygroup' => 6,
+                'idpaysubgroup' => 147,
+                'paymenttitle' => 'Potvrda',
+            ]);
+            break;
+        case 12:
+            case 39:
+            $paymentData = array_merge($paymentData, [
+                'idpaygroup' => 3,
+                'idpaysubgroup' => 142,
+                'paymenttitle' => 'Izdavanje iskaznice',
+            ]);
+            break;
+    }
+
+    DB::table('tbl_payments')->insert($paymentData);
+}
+
+private function updateExistingPayment($cartItem)
+{
+    $payment = DB::table('tbl_payments')
+        ->where('id', $cartItem->tblpaymentsid)
+        ->first();
+
+    if ($payment) {
+        DB::table('tbl_payments')
+            ->where('id', $cartItem->tblpaymentsid)
+            ->update([
+                'paidstatus' => 1,
+                'paidvalue' => $payment->price,
+                'paydate' => now()
+            ]);
+    }
+}
 
 
 }
