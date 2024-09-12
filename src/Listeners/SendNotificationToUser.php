@@ -62,6 +62,7 @@ class SendNotificationToUser
             case 'cancel':
                 $title = 'Narudžba je odbijena';
                 $content = "Vaša narudžba broj: {$event->order->id} je odbijena. {$event->order->cancel_message} Ukoliko mislite da je ovo greška, molimo Vas kontaktirajte nas.";
+                $this->sendAdminMessage($event->user->id, $title, $content);
                 break;
             default:
                 return;

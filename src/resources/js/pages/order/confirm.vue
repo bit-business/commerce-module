@@ -300,10 +300,14 @@ export default {
   },
 
   getFileUrl(filename) {
-    // Assuming your files are stored in the public directory
-    // Adjust this base URL according to your actual file storage location
-    const baseUrl = process.env.VUE_APP_API_BASE_URL || '';
-    return `${baseUrl}/storage/${filename}`;
+    if (this.isPdfFile(filename)) {
+      // For PDFs, add the base URL
+      const baseUrl = process.env.VUE_APP_API_BASE_URL || '';
+      return `${baseUrl}/storage/${filename}`;
+    } else {
+      // For images and other files, return the filename as is
+      return filename;
+    }
   },
 
     

@@ -41,7 +41,7 @@ class OrderController extends Controller
             }
             $search = $request->search;
           
-            if (in_array($roleId, [1,4])) {
+            if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 2439, 4417])) {
                 $orders = Order::when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation));
                 })
@@ -221,16 +221,16 @@ class OrderController extends Controller
     }
 
     public function deleteCartItems($orderId)
-{
-    $orderDetails = OrderDetail::where('order_id', $orderId)->get();
-    
-    foreach ($orderDetails as $orderDetail) {
-        $cartItems = Cart::where('product_detail_id', $orderDetail->product_detail_id)->get();
-        foreach ($cartItems as $cartItem) {
-            $cartItem->delete();
+    {
+        $order = Order::findOrFail($orderId);
+        $orderDetails = $order->orderDetails;
+        
+        foreach ($orderDetails as $orderDetail) {
+            Cart::where('product_detail_id', $orderDetail->product_detail_id)
+                ->where('user_id', $order->user_id)
+                ->delete();
         }
     }
-}
 
 
 public function done(Request $request)
