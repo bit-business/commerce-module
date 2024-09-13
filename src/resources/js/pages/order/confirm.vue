@@ -292,7 +292,7 @@ export default {
     },
 
     isImageFile(filename) {
-    return /\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(filename);
+    return /\.(jpg|jpeg|png|gif|heic)$/i.test(filename);
   },
 
   isPdfFile(filename) {
@@ -300,9 +300,12 @@ export default {
   },
 
   getFileUrl(filename) {
+    
     if (this.isPdfFile(filename)) {
       // For PDFs, add the base URL
-      const baseUrl = process.env.VUE_APP_API_BASE_URL || '';
+    
+
+      const baseUrl = process.env.APP_URL || 'https://baza.hzuts.hr';
       return `${baseUrl}/storage/${filename}`;
     } else {
       // For images and other files, return the filename as is
@@ -330,6 +333,8 @@ export default {
         .then((response) => {
           this.$closeLoader();
           this.order = response.data.order;
+
+          console.log("TEST PDF",(this.order));
         })
         .catch((error) => {
           this.$closeLoader();

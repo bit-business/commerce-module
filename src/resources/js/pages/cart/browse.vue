@@ -29,6 +29,7 @@
                 <skijasi-th sort-key="id"> {{ $t("cart.browse.header.id") }} </skijasi-th>
                 <skijasi-th sort-key="name"> {{ $t("cart.browse.header.name") }} </skijasi-th>
                 <skijasi-th sort-key="productName"> {{ $t("cart.browse.header.productName") }} </skijasi-th>
+                <skijasi-th sort-key="productPrice"> {{ 'Cijena' }} </skijasi-th>
                 <skijasi-th sort-key="quantity"> {{ $t("cart.browse.header.quantity") }} </skijasi-th>
                 <skijasi-th sort-key="createdAt"> {{ $t("cart.browse.header.createdAt") }} </skijasi-th>
                 <skijasi-th sort-key="updatedAt"> {{ $t("cart.browse.header.updatedAt") }} </skijasi-th>
@@ -56,6 +57,9 @@
                   </vs-td>
                   <vs-td :data="cart.productDetail.product.name">
                     {{ `${cart.productDetail.product.name} - ${cart.productDetail.name}` }}
+                  </vs-td>
+                  <vs-td :data="cart.productDetail.price">
+                    {{ toCurrency(cart.productDetail.price) }}
                   </vs-td>
                   <vs-td :data="cart.quantity">
                     {{ cart.quantity }}
@@ -140,6 +144,7 @@
 </template>
 
 <script>
+import currency from "currency.js";
 import moment from 'moment'
 export default {
   name: "CartBrowse",
@@ -294,6 +299,16 @@ editCart(cart) {
       });
     });
 },
+
+toCurrency(value) {
+    return currency(value, {
+      precision: this.$store.state.skijasi.config.currencyPrecision,
+      decimal: this.$store.state.skijasi.config.currencyDecimal,
+      separator: this.$store.state.skijasi.config.currencySeparator,
+      symbol: this.$store.state.skijasi.config.currencySymbol,
+      format: (value, options) => `${value} ${options.symbol}`
+    }).format()
+  },
 handleSearch(e) {
   this.search = e.target.value;
   this.page = 1;
