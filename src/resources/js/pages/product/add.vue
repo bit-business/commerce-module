@@ -118,7 +118,7 @@
               v-model="product.sakrij"
               size="12"
               class="custom-label"
-                :label="'Sakrij'"
+                :label="'Sakrij događaj?'"
               :placeholder="$t('Sakriti ovaj događaj?')"
               :alert="errors.sakrij"
             ></skijasi-switch>

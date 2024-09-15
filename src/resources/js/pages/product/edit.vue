@@ -108,10 +108,9 @@
             <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
             <skijasi-switch
               v-model="product.sakrij"
-              size="12"
+              size="6"
               class="custom-label"
-                :label="'Sakrij'"
-              :placeholder="$t('Sakriti ovaj događaj?')"
+                :label="'Sakrij događaj?'"
               :alert="errors.sakrij"
             ></skijasi-switch>
             <template v-if="$v.product.$dirty">
