@@ -93,6 +93,7 @@ class ProductController extends Controller
                 'items.*.product_image' => 'required|string',
                 'galleryimages' => 'nullable',
                 'galleryimages.*' => 'string',
+                'sakrij' => 'nullable',
             ]);
 
             $slug = $this->generateSlug($request->name);
@@ -111,6 +112,7 @@ class ProductController extends Controller
                 'desc4' => $request->desc4,
                 'desc5' => $request->desc5,
                 'form_id' => $request->form_id,
+                'sakrij' => $request->sakrij,
                 'galleryimages' => json_encode($request->galleryimages),
             ]);
 
@@ -260,6 +262,7 @@ class ProductController extends Controller
             $product->desc5 = $request->desc5;
             $product->form_id = $request->form_id;
             $product->galleryimages = json_encode($request->galleryimages);
+            $product->sakrij = $request->sakrij;
             
             $product->save();
 

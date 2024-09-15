@@ -42,6 +42,8 @@ class Product extends Model
         'form_id',
         'galleryimages',
 
+        'sakrij',
+
         'created_at',
         'updated_at',
         'deleted_at',

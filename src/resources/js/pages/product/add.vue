@@ -7,6 +7,7 @@
           <div slot="header">
             <h3>{{ $t("product.add.title") }}</h3>
           </div>
+
           <vs-row>
             <vs-col vs-w="7" class="mb-3">
               <skijasi-text
@@ -112,7 +113,17 @@
               </template>
             </vs-col>
 
-    
+            <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-switch
+              v-model="product.sakrij"
+              size="12"
+              class="custom-label"
+                :label="'Sakrij'"
+              :placeholder="$t('Sakriti ovaj događaj?')"
+              :alert="errors.sakrij"
+            ></skijasi-switch>
+          </vs-col>
+
 
             <vs-col vs-w="7" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
               <skijasi-select

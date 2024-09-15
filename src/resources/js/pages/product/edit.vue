@@ -105,7 +105,19 @@
               </template>
             </vs-col>
 
-       
+            <vs-col vs-w="6" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+            <skijasi-switch
+              v-model="product.sakrij"
+              size="12"
+              class="custom-label"
+                :label="'Sakrij'"
+              :placeholder="$t('Sakriti ovaj događaj?')"
+              :alert="errors.sakrij"
+            ></skijasi-switch>
+            <template v-if="$v.product.$dirty">
+                <span class="danger" v-if="$v.product.sakrij.$anyError">{{ $t('vuelidate.error') }}</span>
+              </template>
+            </vs-col>
 
 
             <vs-col vs-w="12" class="mb-3"  v-if="selectedCategoryName.trim() == 'Događanja'">   
