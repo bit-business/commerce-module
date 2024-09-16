@@ -44,4 +44,8 @@ export default {
     return resource.get(url);
   },
 
+  generatePaymentSlip(data) {
+    return resource.post(`${apiPrefix}/v1/order/public/stvoriuplatnicu`, data);
+  },
+
 };

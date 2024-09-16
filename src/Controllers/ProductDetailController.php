@@ -23,7 +23,7 @@ class ProductDetailController extends Controller
                 'discount_id' => 'nullable|exists:NadzorServera\Skijasi\Module\Commerce\Models\Discount,id',
                 'name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:0',
-                'price' => 'required|integer|min:0',
+                'price' => 'required|numeric|min:0',
                 // 's_k_u' => 'nullable|string|max:255',
                 'product_image' => 'required|string',
             ]);
@@ -60,7 +60,7 @@ class ProductDetailController extends Controller
                 'discount_id' => 'nullable|exists:NadzorServera\Skijasi\Module\Commerce\Models\Discount,id',
                 'name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:0',
-                'price' => 'required|integer|min:0',
+                'price' => 'required|numeric|min:0',
                 's_k_u' => 'nullable|string|max:255',
                 'product_image' => 'required|string',
             ]);

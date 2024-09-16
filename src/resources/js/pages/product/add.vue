@@ -550,7 +550,12 @@ export default {
   ],
     
   }),
-  validations() {
+  validations()
+   { const decimal2Places = (value) => {
+      if (value === null || value === undefined || value === '') return true;
+      const regex = /^\d+(\.\d{1,2})?$/;
+      return regex.test(value.toString());
+    };
     return {
       product: {
         productCategoryId: {
@@ -578,7 +583,7 @@ export default {
         price: {
           required,
           minValue: minValue(0),
-          integer
+          decimal2Places,
         },
         // SKU: {
         //   required
@@ -599,7 +604,7 @@ export default {
         price: {
           required,
           minValue: minValue(0),
-          integer
+          decimal2Places,
         },
         // SKU: {
         //   required
@@ -670,13 +675,22 @@ export default {
 
 
     toCurrency(value) {
-      return currency(value, {
-        precision: this.$store.state.skijasi.config.currencyPrecision,
-        decimal: this.$store.state.skijasi.config.currencyDecimal,
-        separator: this.$store.state.skijasi.config.currencySeparator,
-        symbol: this.$store.state.skijasi.config.currencySymbol,
-      }).format()
-    },
+  // Parse the input value as a float
+  const floatValue = parseFloat(value);
+
+  // Check if the parsed value is a valid number
+  if (isNaN(floatValue)) {
+    return ''; // Return empty string or some default value for invalid input
+  }
+
+  // Format the value using the currency.js library
+  return currency(floatValue, {
+    precision: 2, // Set to 2 decimal places
+    decimal: ',', // Use comma as decimal separator
+    separator: '.', // Use dot as thousands separator
+    symbol: this.$store.state.skijasi.config.currencySymbol,
+  }).format();
+},
     getProductCategoryList() {
       this.$openLoader();
       this.$api.skijasiProductCategory

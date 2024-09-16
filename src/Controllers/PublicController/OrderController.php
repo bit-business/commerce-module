@@ -435,7 +435,10 @@ class OrderController extends Controller
         $user = auth()->user();
     
         // Calculate the total amount
-        $amount = number_format($order->payed, 0, '', '') . '00'; // Add '00' to match the frontend format
+      
+        $amount = number_format($order->payed, 2, '', '');
+
+        Log::info("AMOUNT TEST: " .  $amount);
 
            // Check if user idmember is empty and format datumrodjenja if necessary
     $poziv_na_broj_primatelja = (string)$user->idmember;
@@ -460,8 +463,8 @@ class OrderController extends Controller
             "datum_izvrsenja" => "",
             "valuta_placanja" => "EUR",
             "ime_i_prezime_platitelja" => $user->name . " " . $user->username,
-            "ulica_i_broj_platitelja" => $user->adresa, // Default address
-            "postanski_i_grad_platitelja" => $user->grad, // Default city
+            "ulica_i_broj_platitelja" => $user->adresa, 
+            "postanski_i_grad_platitelja" => $user->postanskibroj . " " . $user->grad, 
             "naziv_primatelja" => "Hrvatski zbor učitelja i trenera sportova na snijegu(HZUTS)",
             "ulica_i_broj_primatelja" => "Maksimirska 51a",
             "postanski_i_grad_primatelja" => "10 000 Zagreb,Hrvatska",
@@ -471,11 +474,17 @@ class OrderController extends Controller
     
     private function getProductNames($order)
     {
-        return $order->orderDetails->map(function ($orderDetail) {
-            return $orderDetail->productDetail->product->name;
-        })->join(', ');
+        $productNames = $order->orderDetails->map(function ($orderDetail) {
+            $product = $orderDetail->productDetail->product;
+            // Check if the product category is 30, if so, return an empty string
+            if ($product->product_category_id == 30) {
+                return 'Članarina';
+            }
+            return $product->name;
+        })->filter()->join(', ');
+
+        return $productNames;
     }
-    
 
 private function stvoriuplatnicu2($paymentSlipData, $orderId)
 {
