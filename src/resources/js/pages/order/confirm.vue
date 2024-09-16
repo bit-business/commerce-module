@@ -171,7 +171,7 @@
         <img class="w-100" :src="getFileUrl(order.orderPayment.proofOfTransaction)" alt="Proof of Transaction">
       </div>
       <div v-else-if="isPdfFile(order.orderPayment.proofOfTransaction)">
-        <iframe :src="getFileUrl(order.orderPayment.proofOfTransaction)" width="100%" height="500px"></iframe>
+        <iframe :src="getFileUrl(order.orderPayment.proofOfTransaction)" width="100%" height="500px"   @error="handleIframeError"></iframe>
       </div>
       <div v-else>
         <a :href="getFileUrl(order.orderPayment.proofOfTransaction)" target="_blank">Pogledaj Potvrdu</a>
@@ -271,8 +271,12 @@ export default {
   }),
   mounted() {
     this.getOrderDetail();
+    
   },
   methods: {
+    handleIframeError() {
+    console.error('Error loading iframe, falling back to link');
+  },
     done() {
       this.$openLoader();
       this.$api.skijasiOrder
@@ -292,26 +296,23 @@ export default {
     },
 
     isImageFile(filename) {
-    return /\.(jpg|jpeg|png|gif|heic)$/i.test(filename);
-  },
+      return /\.(jpg|jpeg|png|gif|heic)$/i.test(filename);
+    },
 
-  isPdfFile(filename) {
-    return /\.pdf$/i.test(filename);
-  },
+    isPdfFile(filename) {
+      return /\.pdf$/i.test(filename);
+    },
 
-  getFileUrl(filename) {
-    
-    if (this.isPdfFile(filename)) {
-      // For PDFs, add the base URL
-    
+    getFileUrl(proofOfTransaction) {
+  // Check if the proofOfTransaction already has a full URL
+  if (proofOfTransaction.startsWith('http')) {
+    return proofOfTransaction; // Return the full URL as is
+  }
+  
+  // If it's a relative path, append it to /storage/
+  return `/storage/${proofOfTransaction}`;
+},
 
-      const baseUrl = process.env.APP_URL || 'https://baza.hzuts.hr';
-      return `${baseUrl}/storage/${filename}`;
-    } else {
-      // For images and other files, return the filename as is
-      return filename;
-    }
-  },
 
     
   toCurrency(value) {
