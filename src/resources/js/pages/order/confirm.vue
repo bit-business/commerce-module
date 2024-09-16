@@ -314,15 +314,23 @@ export default {
   },
 
     
-    toCurrency(value) {
-    return currency(value, {
-      precision: this.$store.state.skijasi.config.currencyPrecision,
-      decimal: this.$store.state.skijasi.config.currencyDecimal,
-      separator: this.$store.state.skijasi.config.currencySeparator,
-      symbol: this.$store.state.skijasi.config.currencySymbol,
-      format: (value, options) => `${value} ${options.symbol}`
-    }).format()
-  },
+  toCurrency(value) {
+  // Parse the input value as a float
+  const floatValue = parseFloat(value);
+
+  // Check if the parsed value is a valid number
+  if (isNaN(floatValue)) {
+    return ''; // Return empty string or some default value for invalid input
+  }
+
+  // Format the value using the currency.js library
+  return currency(floatValue, {
+    precision: 2, // Set to 2 decimal places
+    decimal: ',', // Use comma as decimal separator
+    separator: '.', // Use dot as thousands separator
+    symbol: this.$store.state.skijasi.config.currencySymbol,
+  }).format();
+},
     getDate(date) {
       return moment(date).format("dddd, DD MMMM YYYY HH:mm:ss");
     },

@@ -368,64 +368,47 @@ class OrderController extends Controller
                 'proof_of_transaction' => 'nullable|string',
             ]);
     
-    
             DB::beginTransaction();
     
             $order = Order::where('user_id', auth()->user()->id)
-            ->where('id', $request->order_id)
-            ->firstOrFail();
-
-
-    
-    
-    
-            // if ($order->status == 'waitingBuyerPayment' && now()->lessThan(Carbon::create($order->expired_at))) {
-         
+                ->where('id', $request->order_id)
+                ->firstOrFail();
     
             $order_payments = OrderPayment::where('order_id', $order->id)->first();
-         
-            $uploaded_path = UploadImage::createImagePotvrda($request->proof_of_transaction, 'uplatnice/potvrde/', $order->id);
-
-            if ($uploaded_path === null) {
-                throw new Exception('Failed to upload proof of transaction');
+    
+            // Only attempt to upload if proof_of_transaction is provided
+            $uploaded_path = null;
+            if ($request->has('proof_of_transaction')) {
+                $uploaded_path = UploadImage::createImagePotvrda($request->proof_of_transaction, 'uplatnice/potvrde/', $order->id);
+                if ($uploaded_path === null) {
+                    throw new Exception('Failed to upload proof of transaction');
+                }
             }
-
     
-                $order_payments->source_bank = $request->source_bank;
-                $order_payments->destination_bank = $request->destination_bank;
-                $order_payments->account_number = $request->account_number;
-                $order_payments->total_transfered = $request->total_transfered;
-              //  $order_payments->proof_of_transaction = $request->proof_of_transaction;
-       $order_payments->proof_of_transaction = $uploaded_path;
-
-                $order_payments->save();
+            $order_payments->source_bank = $request->source_bank;
+            $order_payments->destination_bank = $request->destination_bank;
+            $order_payments->account_number = $request->account_number;
+            $order_payments->total_transfered = $request->total_transfered;
+            if ($uploaded_path) {
+                $order_payments->proof_of_transaction = $uploaded_path;
+            }
+            $order_payments->save();
     
+            $order->status = 'waitingSellerConfirmation';
+            $order->expired_at = null;
+            $order->save();
     
-                
-              //  $uploaded_path = $url;
-                $order->status = 'waitingSellerConfirmation';
-                $order->expired_at = null;
-                $order->save();
+      
     
-                Log::info('Order status updated', ['order' => $order]); // Log the updated order
+            event(new OrderStateWasChanged(auth()->user(), $order, 'waitingSellerConfirmation'));
+            DB::commit();
     
-                event(new OrderStateWasChanged(auth()->user(), $order, 'waitingSellerConfirmation'));
-                DB::commit();
+            Log::info('Transaction committed');
     
-                Log::info('Transaction committed'); // Log the successful commit
-
-
-                
-    
-                return ApiResponse::success();
-            // } else {
-            //     DB::rollback();
-            //     Log::error('Order is failed', ['order' => $order]); // Log the failed order
-            //     return ApiResponse::failed(__('skijasi_commerce::validation.order_is_failed'));
-            // }
+            return ApiResponse::success();
         } catch (Exception $e) {
             DB::rollback();
-            Log::error('Exception occurred', ['exception' => $e]); // Log the exception
+            Log::error('Exception occurred', ['exception' => $e]);
             return ApiResponse::failed($e);
         }
     }

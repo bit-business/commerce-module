@@ -151,16 +151,22 @@ export default {
   },
   methods: {
     toCurrency(value) {
-    const formattedValue = currency(value, {
-      precision: this.$store.state.skijasi.config.currencyPrecision,
-      decimal: this.$store.state.skijasi.config.currencyDecimal,
-      separator: this.$store.state.skijasi.config.currencySeparator,
-      symbol: '', // Set symbol to empty string
-    }).formatWithoutSymbol();
+  // Parse the input value as a float
+  const floatValue = parseFloat(value);
 
-    // Append the currency symbol to the right side
-    return `${formattedValue} ${this.$store.state.skijasi.config.currencySymbol}`;
-    },
+  // Check if the parsed value is a valid number
+  if (isNaN(floatValue)) {
+    return ''; // Return empty string or some default value for invalid input
+  }
+
+  // Format the value using the currency.js library
+  return currency(floatValue, {
+    precision: 2, // Set to 2 decimal places
+    decimal: ',', // Use comma as decimal separator
+    separator: '.', // Use dot as thousands separator
+    symbol: this.$store.state.skijasi.config.currencySymbol,
+  }).format();
+},
     getDate(date) {
       return moment(date).format('DD MMMM YYYY')
     },
