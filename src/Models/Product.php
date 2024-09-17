@@ -43,6 +43,7 @@ class Product extends Model
         'galleryimages',
 
         'sakrij',
+        'zatvoriprijave',
 
         'created_at',
         'updated_at',

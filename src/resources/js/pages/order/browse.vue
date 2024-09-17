@@ -8,6 +8,44 @@
             <h3>{{ $t("orders.browse.title") }}</h3>
           </div>
           <div>
+      
+  <!-- Updated status filter buttons -->
+  <div class="mb-4">
+              <vs-button
+                @click="filterOrders('all')"
+                :color="activeFilter === 'all' ? 'primary' : 'rgba(var(--vs-primary), 0.5)'"
+                :style="{ opacity: activeFilter === 'all' ? 1 : 0.7 }"
+                class="mr-2"
+              >
+                Sve narudžbe
+              </vs-button>
+              <vs-button
+        @click="filterOrders(['waitingSellerConfirmation', 'waitingBuyerPayment'])"
+        :color="activeFilter.includes('waitingSellerConfirmation') || activeFilter.includes('waitingBuyerPayment') ? 'warning' : 'rgba(var(--vs-warning), 0.5)'"
+        :style="{ opacity: activeFilter.includes('waitingSellerConfirmation') || activeFilter.includes('waitingBuyerPayment') ? 1 : 0.7 }"
+        class="mr-2"
+      >
+        Čeka Potvrdu
+              </vs-button>
+              <vs-button
+                @click="filterOrders('cancel')"
+                :color="activeFilter === 'cancel' ? 'danger' : 'rgba(var(--vs-danger), 0.5)'"
+                :style="{ opacity: activeFilter === 'cancel' ? 1 : 0.7 }"
+                class="mr-2"
+              >
+                Otkazane
+              </vs-button>
+              <vs-button
+                @click="filterOrders('done')"
+                :color="activeFilter === 'done' ? 'success' : 'rgba(var(--vs-success), 0.5)'"
+                :style="{ opacity: activeFilter === 'done' ? 1 : 0.7 }"
+                class="mr-2"
+              >
+                Završene
+              </vs-button>
+            </div>
+
+
             <skijasi-server-side-table
               v-model="selected"
               :data="orders.data"
@@ -127,17 +165,26 @@ export default {
       search: "",
       rowPerPage: null,
       willDeleteId: null,
+
+      activeFilter: 'all',
     };
   },
   mounted() {
-    this.getOrderList();
+    const filterParam = this.$route.query.filter;
+    if (filterParam) {
+      this.activeFilter = filterParam.split(',');
+      this.getOrderList();
+    } else {
+      this.getOrderList();
+    }
+   
   },
   methods: {
   getStatusStyle(status) {
     switch (status) {
       case 'waitingSellerConfirmation':
         return 'background-color: #ffb74d; font-weight: bold;'; // Light Orange, bold
-      case 'failed':
+      case 'canceled':
         return 'background-color: #ef5350; font-weight: bold;'; // Light Red, bold
       case 'done':
         return 'background-color: #66bb6a; font-weight: bold;'; // Light Green, bold
@@ -180,22 +227,39 @@ export default {
           return this.$t("orders.status.3");
         case "done":
           return this.$t("orders.status.4");
+        case "cancel":
+        return this.$t("orders.status.-1");
         default:
           return this.$t("orders.status.-1");
       }
     },
+
+    filterOrders(status) {
+      this.activeFilter = status;
+      this.page = 1;
+      this.getOrderList();
+    },
     getOrderList() {
       this.$openLoader();
+      const params = {
+        page: this.page,
+        limit: this.limit,
+        relation: ["user"],
+        filterValue: this.filter,
+        orderField: this.$caseConvert.snake(this.orderField),
+        orderDirection: this.$caseConvert.snake(this.orderDirection),
+        search: this.search,
+      };
+
+      // Handle multiple statuses for "Čeka Potvrdu"
+      if (Array.isArray(this.activeFilter)) {
+        params.status = this.activeFilter.join(',');
+      } else if (this.activeFilter !== 'all') {
+        params.status = this.activeFilter;
+      }
+
       this.$api.skijasiOrder
-        .browse({
-          page: this.page,
-          limit: this.limit,
-          relation: ["user"],
-          filterValue: this.filter,
-          orderField: this.$caseConvert.snake(this.orderField),
-          orderDirection: this.$caseConvert.snake(this.orderDirection),
-          search: this.search,
-        })
+        .browse(params)
         .then((response) => {
           this.$closeLoader();
           this.selected = [];

@@ -32,6 +32,7 @@ class OrderController extends Controller
                 'search' => 'nullable|string',
                 'order_field' => 'nullable|string',
                 'order_direction' => 'nullable|string|in:desc,asc',
+                'status' => 'nullable|string',
             ]);
 
             $userId = auth()->user()->id;
@@ -40,6 +41,7 @@ class OrderController extends Controller
                 $roleId = $value->role_id;
             }
             $search = $request->search;
+            $status = $request->status;
           
             if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 9, 2439, 4417])) {
                 $orders = Order::when($request->relation, function ($query) use ($request) {
@@ -51,6 +53,10 @@ class OrderController extends Controller
                             ->orWhereHas('user', function ($q) use ($search) {
                                 $q->where('username', 'LIKE', '%'.$search.'%');
                             });
+                    })
+                    ->when($status && $status !== 'all', function ($query) use ($status) {
+                        $statuses = explode(',', $status);
+                        return $query->whereIn('status', $statuses);
                     })
                     ->orderBy($request->order_field ?? 'updated_at', $request->order_direction ?? 'desc')
                     ->paginate($request->limit ?? 10);
@@ -65,6 +71,10 @@ class OrderController extends Controller
                             $q->where('username', 'like', '%'.$search.'%');
                         });
                     })
+                    ->when($status && $status !== 'all', function ($query) use ($status) {
+                        $statuses = explode(',', $status);
+                        return $query->whereIn('status', $statuses);
+                    })
                     ->orderBy($request->order_field ?? 'updated_at', $request->order_direction ?? 'desc')
                     ->paginate($request->limit ?? 10);
             }
@@ -76,6 +86,7 @@ class OrderController extends Controller
             return ApiResponse::failed($e);
         }
     }
+
 
     public function read(Request $request)
     {

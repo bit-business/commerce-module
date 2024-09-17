@@ -116,6 +116,13 @@
             <template v-if="$v.product.$dirty">
                 <span class="danger" v-if="$v.product.sakrij.$anyError">{{ $t('vuelidate.error') }}</span>
               </template>
+              <skijasi-switch
+              v-model="product.zatvoriprijave"
+              size="6"
+              class="custom-label"
+                :label="'Zatvori prijave?'"
+              :alert="errors.zatvoriprijave"
+            ></skijasi-switch>
             </vs-col>
 
 

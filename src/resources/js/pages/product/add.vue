@@ -116,11 +116,19 @@
             <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
             <skijasi-switch
               v-model="product.sakrij"
-              size="12"
+              size="6"
               class="custom-label"
                 :label="'Sakrij događaj?'"
               :placeholder="$t('Sakriti ovaj događaj?')"
               :alert="errors.sakrij"
+            ></skijasi-switch>
+            <skijasi-switch
+              v-model="product.zatvoriprijave"
+              size="6"
+              class="custom-label"
+                :label="'Zatvori prijave?'"
+              :placeholder="$t('Zatvori prijave?')"
+              :alert="errors.zatvoriprijave"
             ></skijasi-switch>
           </vs-col>
 
