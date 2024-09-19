@@ -10,6 +10,8 @@ use NadzorServera\Skijasi\Helpers\ApiResponse;
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
 use NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail;
 
+use Illuminate\Support\Facades\Log;
+
 class CartController extends Controller
 {
     public function browse(Request $request)
@@ -104,22 +106,25 @@ class CartController extends Controller
 
     public function add(Request $request)
     {
+        Log::info('Add function called with request:', $request->all());
+    
         DB::beginTransaction();
         try {
             $request->validate([
-                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail,id', // Ensure 'id' is a valid 'ProductDetail' id
-                'quantity' => 'required|min:0|integer',
+                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail,id',
+                'quantity' => 'required|min:1|integer',
             ], [
                 'id.required' => 'You have to select one of the variants!',
             ]);
     
-            $product_detail = ProductDetail::where('id', $request->id)->first();
-    
+            $product_detail = ProductDetail::with('product')->where('id', $request->id)->first();
             if (!$product_detail) {
                 return ApiResponse::failed('Product detail not found!');
             }
     
-            if ($product_detail->quantity <= 0) {
+            // Check if there's enough stock
+            if ($product_detail->quantity < $request->quantity) {
+                Log::info('Stock not available. Product detail quantity: ' . $product_detail->quantity . ', Requested quantity: ' . $request->quantity);
                 return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
             }
     
@@ -132,25 +137,28 @@ class CartController extends Controller
                     'quantity' => $request->quantity,
                 ]);
             } else {
-                if ($cart->quantity + $request->quantity > $product_detail->quantity) {
+                $newQuantity = $cart->quantity + $request->quantity;
+                if ($product_detail->quantity < $newQuantity) {
+                    Log::info('Not enough stock for cart update. Product detail quantity: ' . $product_detail->quantity . ', New cart quantity: ' . $newQuantity);
                     return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
                 }
-    
-                Cart::where('user_id', auth()->id())->where('product_detail_id', $request->id)->update([
-                    'product_detail_id' => $request->id,
-                    'user_id' => auth()->id(),
-                    'quantity' => $cart->quantity,
-                    // Uncomment this line if you want to increase the quantity
-                    // 'quantity' => $cart->quantity + $request->quantity,
+                $cart->update([
+                    'quantity' => $newQuantity,
                 ]);
             }
     
-            DB::commit();
+            // Reduce the quantity only if the product category is not 30
+            if ($product_detail->product->product_category_id == 30) {
+                $product_detail->quantity -= $request->quantity;
+                $product_detail->save();
+            }
     
+            DB::commit();
+            Log::info('Add function completed successfully');
             return ApiResponse::success();
         } catch (Exception $e) {
             DB::rollback();
-    
+            Log::error('Error in add function: ' . $e->getMessage());
             return ApiResponse::failed($e);
         }
     }

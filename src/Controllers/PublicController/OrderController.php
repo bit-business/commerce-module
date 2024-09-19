@@ -181,8 +181,14 @@ class OrderController extends Controller
                 $cart->save();
                 $product_detail = ProductDetail::with('discount')->findOrFail($cart->product_detail_id);
     
-                if ($item['quantity'] > $product_detail->quantity) {
-                    throw new Exception('Nema više raspoloživih');
+                if ($product_detail->product->product_category_id != 30) {
+                    if ($item['quantity'] > $product_detail->quantity) {
+                        throw new Exception('Nema više raspoloživih');
+                    }
+                } else {
+                    if ($item['quantity'] > ($product_detail->quantity + $item['quantity'])) {
+                        throw new Exception('Nema više raspoloživih');
+                    }
                 }
     
                 $discount = null;
@@ -259,8 +265,10 @@ class OrderController extends Controller
                     }
                     
     
-                    $product_detail->quantity -= $item['quantity'];
-                    $product_detail->save();
+                    if ($product_detail->product->product_category_id != 30) {
+                        $product_detail->quantity -= $item['quantity'];
+                        $product_detail->save();
+                    }
                 }
     
                 // Delete cart items
