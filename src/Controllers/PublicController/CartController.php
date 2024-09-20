@@ -137,7 +137,7 @@ class CartController extends Controller
                     'quantity' => $request->quantity,
                 ]);
             } else {
-                $newQuantity = $cart->quantity + $request->quantity;
+                $newQuantity = $cart->quantity;
                 if ($product_detail->quantity < $newQuantity) {
                     Log::info('Not enough stock for cart update. Product detail quantity: ' . $product_detail->quantity . ', New cart quantity: ' . $newQuantity);
                     return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));

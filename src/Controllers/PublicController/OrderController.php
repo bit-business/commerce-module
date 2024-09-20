@@ -149,15 +149,9 @@ class OrderController extends Controller
                 'items' => 'required|array',
                 'items.*.id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
                 'items.*.quantity' => 'required|integer|min:1',
-                // 'user_address_id' => 'exists:NadzorServera\Skijasi\Module\Commerce\Models\UserAddress,id',
                 'payment_type_option_id' => 'string|max:255|exists:NadzorServera\Skijasi\Module\Commerce\Models\PaymentOption,id',
                 'message' => 'nullable|string',
             ]);
-    
-            // $user_address = UserAddress::select('recipient_name', 'address_line1', 'address_line2', 'city', 'postal_code', 'country', 'phone_number')
-            // ->where('id', $request->user_address_id)
-            // ->where('user_id', auth()->user()->id)
-            // ->firstOrFail();
     
             $itemIds = array_column($request->items, 'id');
     
@@ -246,12 +240,18 @@ class OrderController extends Controller
     
                     if ($orderDetail) {
                         // Update existing order detail
+                        $quantityDifference = $item['quantity'] - $orderDetail->quantity;
                         $orderDetail->update([
                             'discount_id' => $discount ? $discount->id : null,
                             'price' => $product_detail->price,
                             'discounted' => $discounted,
                             'quantity' => $item['quantity'],
                         ]);
+    
+                        if ($product_detail->product->product_category_id != 30) {
+                            $product_detail->quantity -= $quantityDifference;
+                            $product_detail->save();
+                        }
                     } else {
                         // Create new order detail
                         OrderDetail::create([
@@ -262,24 +262,19 @@ class OrderController extends Controller
                             'discounted' => $discounted,
                             'quantity' => $item['quantity'],
                         ]);
-                    }
-                    
     
-                    if ($product_detail->product->product_category_id != 30) {
-                        $product_detail->quantity -= $item['quantity'];
-                        $product_detail->save();
+                        if ($product_detail->product->product_category_id != 30) {
+                            $product_detail->quantity -= $item['quantity'];
+                            $product_detail->save();
+                        }
                     }
                 }
     
-                // Delete cart items
-               // $this->deleteCartItems($existingOrder->id);
-
-                     // Generate the payment slip PDF
-            $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
-            $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
-      
-            event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment', $pdfPath));
-   
+                // Generate the payment slip PDF
+                $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
+                $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
+    
+                event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment', $pdfPath));
     
                 DB::commit();
     
@@ -287,8 +282,6 @@ class OrderController extends Controller
             }
     
             // Create new order
-            // $order_replicated = $user_address->replicate(['id'])->toArray();
-    
             $order = Order::create([
                 'user_id' => auth()->user()->id,
                 'discounted' => $total_discounted,
@@ -301,10 +294,6 @@ class OrderController extends Controller
                     : null,
                 'message' => $request->message,
             ]);
-    
-            // OrderAddress::create(array_merge([
-            //     'order_id' => $order->id,
-            // ], $order_replicated));
     
             OrderPayment::create([
                 'order_id' => $order->id,
@@ -337,17 +326,15 @@ class OrderController extends Controller
                     'quantity' => $item['quantity'],
                 ]);
     
-                $product_detail->quantity -= $item['quantity'];
-                $product_detail->save();
+                if ($product_detail->product->product_category_id != 30) {
+                    $product_detail->quantity -= $item['quantity'];
+                    $product_detail->save();
+                }
             }
     
-            // Delete cart items
-          //  $this->deleteCartItems($order->id);
-    
-      
             $paymentSlipData = $this->generatePaymentSlipData($order);
             $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
-       
+    
             event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment', $pdfPath));
     
             DB::commit();
