@@ -502,7 +502,7 @@ export default {
     willDeleteId: null,
 
     productDetailNazivi: [
-    { label: 'Grupno skijanje', value: 'Grupno skijanje' },
+    { label: 'Produženje licence', value: 'Produženje licence' },
     { label: 'HZUTS član', value: 'HZUTS član' },
     // { label: 'Učitelj skijanja', value: 'Učitelj skijanja' },
     // { label: 'ISIA učitelj', value: 'ISIA učitelj' },

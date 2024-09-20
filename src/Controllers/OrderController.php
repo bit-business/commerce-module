@@ -271,7 +271,7 @@ public function done(Request $request)
             $statusPlacanja = GetData::calculatePaymentStatus($paymentData);
 
             DB::table('skijasi_form_entries')
-                ->where('hzutsid', $order->user_id)
+                ->where('hzutsid', $order->user_idmember)
                 ->whereNull('placeno')
                 ->orderBy('created_at', 'desc')
                 ->limit(1)

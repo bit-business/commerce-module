@@ -14,23 +14,31 @@
               <vs-button
                 @click="filterOrders('all')"
                 :color="activeFilter === 'all' ? 'primary' : 'rgba(var(--vs-primary), 0.5)'"
-                :style="{ opacity: activeFilter === 'all' ? 1 : 0.7 }"
+                :style="{ opacity: activeFilter === 'all' ? 1 : 0.77 }"
                 class="mr-2"
               >
                 Sve narudžbe
               </vs-button>
               <vs-button
-        @click="filterOrders(['waitingSellerConfirmation', 'waitingBuyerPayment'])"
-        :color="activeFilter.includes('waitingSellerConfirmation') || activeFilter.includes('waitingBuyerPayment') ? 'warning' : 'rgba(var(--vs-warning), 0.5)'"
-        :style="{ opacity: activeFilter.includes('waitingSellerConfirmation') || activeFilter.includes('waitingBuyerPayment') ? 1 : 0.7 }"
-        class="mr-2"
-      >
-        Čeka Potvrdu
+                @click="filterOrders('waitingSellerConfirmation')"
+                :color="activeFilter === 'waitingSellerConfirmation' ? 'warning' : 'rgba(var(--vs-warning), 0.5)'"
+                :style="{ opacity: activeFilter === 'waitingSellerConfirmation' ? 1 : 0.77 }"
+                class="mr-2"
+              >
+                Čeka Potvrdu
+              </vs-button>
+              <vs-button
+                @click="filterOrders('waitingBuyerPayment')"
+                :color="activeFilter === 'waitingBuyerPayment' ? 'gray' : 'rgba(var(--vs-gray), 0.5)'"
+                :style="{ opacity: activeFilter === 'waitingBuyerPayment' ? 1 : 0.77, backgroundColor: activeFilter === 'waitingBuyerPayment' ? '#808080' : '#D3D3D3' }"
+                class="mr-2"
+              >
+                Nije potvrđena kupnja
               </vs-button>
               <vs-button
                 @click="filterOrders('cancel')"
                 :color="activeFilter === 'cancel' ? 'danger' : 'rgba(var(--vs-danger), 0.5)'"
-                :style="{ opacity: activeFilter === 'cancel' ? 1 : 0.7 }"
+                :style="{ opacity: activeFilter === 'cancel' ? 1 : 0.77 }"
                 class="mr-2"
               >
                 Otkazane
@@ -38,12 +46,13 @@
               <vs-button
                 @click="filterOrders('done')"
                 :color="activeFilter === 'done' ? 'success' : 'rgba(var(--vs-success), 0.5)'"
-                :style="{ opacity: activeFilter === 'done' ? 1 : 0.7 }"
+                :style="{ opacity: activeFilter === 'done' ? 1 : 0.77 }"
                 class="mr-2"
               >
                 Završene
               </vs-button>
             </div>
+      
 
 
             <skijasi-server-side-table
