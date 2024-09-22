@@ -19,6 +19,7 @@ use NadzorServera\Skijasi\Theme\CommerceTheme\Models\Form;
 use NadzorServera\Skijasi\Helpers\GetData;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -255,6 +256,26 @@ public function done(Request $request)
         $order->status = 'done';
         $order->save();
 
+
+
+        $user = User::find($order->user_id);
+
+        if ($user) {
+            $paymentData = GetData::fetchPaymentDataForMember($user->id);
+            $statusPlacanja = GetData::calculatePaymentStatus($paymentData);
+
+            DB::table('skijasi_form_entries')
+                ->where('userid', $order->user_id)
+                ->whereNull('placeno')
+                ->orderBy('created_at', 'desc')
+                ->limit(1)
+                ->update([
+                    'placeno' => $order->payed . '€, ' . $statusPlacanja,
+                    'brojnarudzbe' => $order->id
+                ]);
+
+        } 
+
         $this->updateStaroPlacanje($order->id);
 
 
@@ -264,25 +285,7 @@ public function done(Request $request)
 
         
 
-        $user = User::find($order->user_id);
-
-        if ($user) {
-            $paymentData = GetData::fetchPaymentDataForMember($user->id);
-            $statusPlacanja = GetData::calculatePaymentStatus($paymentData);
-
-            DB::table('skijasi_form_entries')
-                ->where('hzutsid', $order->user_idmember)
-                ->whereNull('placeno')
-                ->orderBy('created_at', 'desc')
-                ->limit(1)
-                ->update([
-                    'placeno' => $order->payed . '€, ' . $statusPlacanja,
-                    'brojnarudzbe' => $order->id
-                ]);
-
-        } else {
-            \Log::error("User not found for order ID: " . $order->id);
-        }
+    
 
 
 
