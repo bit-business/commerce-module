@@ -106,7 +106,6 @@ class CartController extends Controller
 
     public function add(Request $request)
     {
-        Log::info('Add function called with request:', $request->all());
     
         DB::beginTransaction();
         try {

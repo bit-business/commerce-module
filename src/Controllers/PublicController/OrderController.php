@@ -171,8 +171,7 @@ class OrderController extends Controller
     
             foreach ($request->items as $item) {
                 $cart = Cart::find($item['id']);
-                $cart->cekapotvrdu = 1; // Set 'cekapotvrdu' to 1
-                $cart->save();
+    
                 $product_detail = ProductDetail::with('discount')->findOrFail($cart->product_detail_id);
     
                 if ($product_detail->product->product_category_id != 30) {
@@ -217,8 +216,7 @@ class OrderController extends Controller
     
                 foreach ($request->items as $item) {
                     $cart = Cart::find($item['id']);
-                    $cart->cekapotvrdu = 1; // Set 'cekapotvrdu' to 1
-                    $cart->save();
+         
                     $product_detail = ProductDetail::findOrFail($cart->product_detail_id);
                     $discount = null;
                     $discounted = 0;
@@ -364,10 +362,23 @@ class OrderController extends Controller
             ]);
     
             DB::beginTransaction();
-    
             $order = Order::where('user_id', auth()->user()->id)
-                ->where('id', $request->order_id)
-                ->firstOrFail();
+            ->where('id', $request->order_id)
+            ->firstOrFail();
+
+
+            
+              // Fetch the product details associated with this order
+              $productDetailIds = $order->orderDetails->pluck('product_detail_id');
+
+              // Update the cart items for these products
+              Cart::whereIn('product_detail_id', $productDetailIds)
+                  ->where('user_id', auth()->user()->id)
+                  ->update(['cekapotvrdu' => 1]);
+
+
+
+      
     
             $order_payments = OrderPayment::where('order_id', $order->id)->first();
     
