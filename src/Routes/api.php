@@ -132,7 +132,9 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
             Route::get('/', HelperRoute::getController('PublicController\CartController@browse'));
             Route::post('/add', HelperRoute::getController('PublicController\CartController@add'));
             Route::post('/addplacanja', HelperRoute::getController('PublicController\CartController@addplacanja'));
-            
+
+            Route::post('/remove', HelperRoute::getController('PublicController\CartController@removeFromCart'));
+
             Route::post('/addplacanjazahtjevi', HelperRoute::getController('PublicController\CartController@addplacanjazahtjevi'));
 
             Route::put('/edit', HelperRoute::getController('PublicController\CartController@edit'));

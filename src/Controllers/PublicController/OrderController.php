@@ -359,6 +359,8 @@ class OrderController extends Controller
                 'account_number' => 'nullable|alpha_num',
                 'total_transfered' => 'nullable|numeric',
                 'proof_of_transaction' => 'nullable|string',
+                'item_ids' => 'required|array', // Add this line
+                'item_ids.*' => 'exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
             ]);
     
             DB::beginTransaction();
@@ -366,18 +368,12 @@ class OrderController extends Controller
             ->where('id', $request->order_id)
             ->firstOrFail();
 
-
             
-              // Fetch the product details associated with this order
-              $productDetailIds = $order->orderDetails->pluck('product_detail_id');
+       
 
-              // Update the cart items for these products
-              Cart::whereIn('product_detail_id', $productDetailIds)
-                  ->where('user_id', auth()->user()->id)
-                  ->update(['cekapotvrdu' => 1]);
-
-
-
+        Cart::whereIn('id', $request->item_ids)
+        ->where('user_id', auth()->user()->id)
+        ->update(['cekapotvrdu' => 1]);
       
     
             $order_payments = OrderPayment::where('order_id', $order->id)->first();

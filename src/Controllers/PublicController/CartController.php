@@ -28,6 +28,28 @@ class CartController extends Controller
     }
 
 
+    public function removeFromCart(Request $request)
+{
+    DB::beginTransaction();
+    try {
+        $request->validate([
+            'userid' => 'required',
+            'tblpaymentsid' => 'required|integer',
+        ]);
+
+        $cart = Cart::where('user_id', $request->userid)
+                    ->where('tblpaymentsid', $request->tblpaymentsid)
+                    ->delete();
+
+        DB::commit();
+
+        return ApiResponse::success(['message' => 'Cart item removed successfully']);
+    } catch (Exception $e) {
+        DB::rollback();
+        return ApiResponse::failed($e);
+    }
+}
+
     public function addplacanja(Request $request)
     {
         DB::beginTransaction();
