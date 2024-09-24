@@ -268,16 +268,25 @@ class OrderController extends Controller
                     }
                 }
     
-                // Generate the payment slip PDF
-                $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
-                $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
-    
-                event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment', $pdfPath));
-    
-                DB::commit();
-    
-                return ApiResponse::success(['order' => $existingOrder->id]);
-            }
+            // Generate the payment slip PDF
+            $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
+            $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
+
+
+
+            event(new OrderStateWasChanged(auth()->user(), $existingOrder, 'waitingBuyerPayment', $pdfPath));
+
+            DB::commit();
+
+            // Make sure this URL is correct and accessible
+            $paymentSlipUrl = asset('storage/uplatnice/' . basename($pdfPath));
+
+            return ApiResponse::success([
+                'order' => $existingOrder->id,
+                'payment_slip_url' => $paymentSlipUrl
+            ]);
+        }
+
     
             // Create new order
             $order = Order::create([
@@ -329,24 +338,34 @@ class OrderController extends Controller
                     $product_detail->save();
                 }
             }
+            
+    
     
             $paymentSlipData = $this->generatePaymentSlipData($order);
-            $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
-    
-            event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment', $pdfPath));
-    
-            DB::commit();
-    
-            return ApiResponse::success(['order' => $order->id]);
-        } catch (Exception $e) {
-            DB::rollback();
-            return ApiResponse::failed($e);
+        $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
+
+        if ($pdfPath === null) {
+            Log::error("Failed to generate PDF for new order: " . $order->id);
+            throw new \Exception("Failed to generate payment slip PDF");
         }
+
+        event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment', $pdfPath));
+
+        DB::commit();
+
+        // Make sure this URL is correct and accessible
+        $paymentSlipUrl = asset('storage/uplatnice/' . basename($pdfPath));
+
+        return ApiResponse::success([
+            'order' => $order->id,
+            'payment_slip_url' => $paymentSlipUrl
+        ]);
+    } catch (Exception $e) {
+        DB::rollback();
+        Log::error('Error in finish method: ' . $e->getMessage());
+        return ApiResponse::failed($e);
     }
-    
-    
-
-
+}
 
 
     public function pay(Request $request)
@@ -415,6 +434,33 @@ class OrderController extends Controller
         }
     }
 
+    public function update(Request $request)
+{
+    DB::beginTransaction();
+    try {
+        $order = Order::findOrFail($request->order_id);
+        
+        // Update order details
+        // ... (code to update order details based on new items)
+
+        // Regenerate payment slip
+        $paymentSlipData = $this->generatePaymentSlipData($order);
+        $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
+        $order->payment_slip_path = $pdfPath;
+        $order->save();
+
+        DB::commit();
+
+        return ApiResponse::success([
+            'order' => $order->id,
+            'payment_slip_url' => asset('storage/' . $pdfPath)
+        ]);
+    } catch (Exception $e) {
+        DB::rollback();
+        return ApiResponse::failed($e);
+    }
+}
+
     private function generatePaymentSlipData($order)
     {
         $user = auth()->user();
@@ -432,9 +478,10 @@ class OrderController extends Controller
         $poziv_na_broj_primatelja = $datumrodjenja->format('dmY');
     }
     
-        // Concatenate product names
+
+        // Use the updated getProductNames method
         $productNames = $this->getProductNames($order);
-    
+
         // Create the payment slip data array
         return [
             "poziv_na_broj_platitelja" => "",
@@ -457,39 +504,56 @@ class OrderController extends Controller
         ];
     }
     
+    
     private function getProductNames($order)
     {
-        $productNames = $order->orderDetails->map(function ($orderDetail) {
+        $hasCategory30 = false;
+        $otherProductNames = [];
+    
+        foreach ($order->orderDetails as $orderDetail) {
             $product = $orderDetail->productDetail->product;
-            // Check if the product category is 30, if so, return an empty string
             if ($product->product_category_id == 30) {
-                return 'Članarina';
+                $hasCategory30 = true;
+            } else {
+                $otherProductNames[] = $product->name;
             }
-            return $product->name;
-        })->filter()->join(', ');
-
-        return $productNames;
+        }
+    
+        if ($hasCategory30) {
+            return $otherProductNames ? 'Članarina, ' . implode(', ', $otherProductNames) : 'Članarina';
+        } else {
+            return implode(', ', $otherProductNames);
+        }
     }
-
-private function stvoriuplatnicu2($paymentSlipData, $orderId)
-{
-    $transactionUniqueCode = $orderId;
-    $paymentSlipPdf = $this->runPythonScript(json_encode($paymentSlipData));
-
-
-
-    if ($paymentSlipPdf === null || empty($paymentSlipPdf)) {
-        Log::error("PDF creation failed or empty");
-        return null;
+    
+    private function stvoriuplatnicu2($paymentSlipData, $orderId)
+    {
+        try {
+            $transactionUniqueCode = $orderId;
+            $paymentSlipPdf = $this->runPythonScript(json_encode($paymentSlipData));
+    
+            if ($paymentSlipPdf === null || empty($paymentSlipPdf)) {
+                Log::error("PDF creation failed or empty for order: " . $orderId);
+                return null;
+            }
+    
+            $filename = "pdf-" . $transactionUniqueCode . ".pdf";
+            $filePath = storage_path('app/public/uplatnice/' . $filename);
+    
+            $bytesWritten = file_put_contents($filePath, $paymentSlipPdf);
+            
+            if ($bytesWritten === false) {
+                Log::error("Failed to write PDF file for order: " . $orderId);
+                return null;
+            }
+    
+            Log::info("PDF created successfully for order: " . $orderId . ", path: " . $filePath);
+            return $filePath;
+        } catch (\Exception $e) {
+            Log::error("Exception in stvoriuplatnicu2: " . $e->getMessage());
+            return null;
+        }
     }
-
-    $filename = "pdf-" . $transactionUniqueCode . ".pdf";
-    $filePath = storage_path('app/public/uplatnice/' . $filename);
-
-    file_put_contents($filePath, $paymentSlipPdf);
-
-    return $filePath;
-}
 
 
     //dodano za uplatnice pocetak 
