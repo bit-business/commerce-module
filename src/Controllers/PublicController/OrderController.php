@@ -149,6 +149,7 @@ class OrderController extends Controller
                 'items' => 'required|array',
                 'items.*.id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
                 'items.*.quantity' => 'required|integer|min:1',
+                'items.*.product_name' => 'required|string',
                 'payment_type_option_id' => 'string|max:255|exists:NadzorServera\Skijasi\Module\Commerce\Models\PaymentOption,id',
                 'message' => 'nullable|string',
             ]);
@@ -269,7 +270,7 @@ class OrderController extends Controller
                 }
     
             // Generate the payment slip PDF
-            $paymentSlipData = $this->generatePaymentSlipData($existingOrder);
+            $paymentSlipData = $this->generatePaymentSlipData($existingOrder, $request->items);
             $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
 
 
@@ -341,7 +342,7 @@ class OrderController extends Controller
             
     
     
-            $paymentSlipData = $this->generatePaymentSlipData($order);
+            $paymentSlipData = $this->generatePaymentSlipData($order, $request->items);
         $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $order->id);
 
         if ($pdfPath === null) {
@@ -461,70 +462,65 @@ class OrderController extends Controller
     }
 }
 
-    private function generatePaymentSlipData($order)
-    {
-        $user = auth()->user();
-    
-        // Calculate the total amount
-      
-        $amount = number_format($order->payed, 2, '', '');
+private function generatePaymentSlipData($order, $items)
+{
+    $user = auth()->user();
+    $amount = number_format($order->payed, 2, '', '');
 
-        Log::info("AMOUNT TEST: " .  $amount);
-
-           // Check if user idmember is empty and format datumrodjenja if necessary
     $poziv_na_broj_primatelja = (string)$user->idmember;
     if (empty($poziv_na_broj_primatelja)) {
         $datumrodjenja = new \DateTime($user->datumrodjenja);
         $poziv_na_broj_primatelja = $datumrodjenja->format('dmY');
     }
-    
 
-        // Use the updated getProductNames method
-        $productNames = $this->getProductNames($order);
+    $productNames = $this->getProductNames($items);
 
-        // Create the payment slip data array
-        return [
-            "poziv_na_broj_platitelja" => "",
-            "poziv_na_broj_primatelja" => $poziv_na_broj_primatelja, // User ID as a string
-            "iznos" => $amount, // Ensure this matches the frontend format
-            "iban_primatelja" => "HR7423600001101359833",
-            "iban_platitelja" => "",
-            "model_primatelja" => "HR07",
-            "model_platitelja" => "",
-            "sifra_namjene" => "",
-            "datum_izvrsenja" => "",
-            "valuta_placanja" => "EUR",
-            "ime_i_prezime_platitelja" => $user->name . " " . $user->username,
-            "ulica_i_broj_platitelja" => $user->adresa, 
-            "postanski_i_grad_platitelja" => $user->postanskibroj . " " . $user->grad, 
-            "naziv_primatelja" => "Hrvatski zbor učitelja i trenera sportova na snijegu(HZUTS)",
-            "ulica_i_broj_primatelja" => "Maksimirska 51a",
-            "postanski_i_grad_primatelja" => "10 000 Zagreb,Hrvatska",
-            "opis_placanja" => $productNames . ", " . $user->name . " " . $user->username
-        ];
-    }
-    
-    
-    private function getProductNames($order)
-    {
-        $hasCategory30 = false;
-        $otherProductNames = [];
-    
-        foreach ($order->orderDetails as $orderDetail) {
-            $product = $orderDetail->productDetail->product;
-            if ($product->product_category_id == 30) {
-                $hasCategory30 = true;
-            } else {
-                $otherProductNames[] = $product->name;
-            }
-        }
-    
-        if ($hasCategory30) {
-            return $otherProductNames ? 'Članarina, ' . implode(', ', $otherProductNames) : 'Članarina';
+    return [
+        "poziv_na_broj_platitelja" => "",
+        "poziv_na_broj_primatelja" => $poziv_na_broj_primatelja,
+        "iznos" => $amount,
+        "iban_primatelja" => "HR7423600001101359833",
+        "iban_platitelja" => "",
+        "model_primatelja" => "HR07",
+        "model_platitelja" => "",
+        "sifra_namjene" => "",
+        "datum_izvrsenja" => "",
+        "valuta_placanja" => "EUR",
+        "ime_i_prezime_platitelja" => $user->name . " " . $user->username,
+        "ulica_i_broj_platitelja" => $user->adresa,
+        "postanski_i_grad_platitelja" => $user->postanskibroj . " " . $user->grad,
+        "naziv_primatelja" => "Hrvatski zbor učitelja i trenera sportova na snijegu(HZUTS)",
+        "ulica_i_broj_primatelja" => "Maksimirska 51a",
+        "postanski_i_grad_primatelja" => "10 000 Zagreb,Hrvatska",
+        "opis_placanja" => $productNames . ", " . $user->name . " " . $user->username
+    ];
+}
+
+private function getProductNames($items)
+{
+    $hasSpecialItem = false;
+    $otherProductNames = [];
+    $specialItems = ['Amblem', 'Izdavanje Iskaznice', 'Potvrda'];
+
+    foreach ($items as $item) {
+        $productDetail = ProductDetail::find($item['product_detail_id']);
+        $productName = $item['product_name'];
+
+        if (($productDetail && $productDetail->product->product_category_id == 30) || 
+            in_array($productName, $specialItems)) {
+            $hasSpecialItem = true;
         } else {
-            return implode(', ', $otherProductNames);
+            $otherProductNames[] = $productName;
         }
     }
+
+    if ($hasSpecialItem) {
+        array_unshift($otherProductNames, 'Članarina');
+        return implode(', ', array_unique($otherProductNames));
+    } else {
+        return implode(', ', $otherProductNames);
+    }
+}
     
     private function stvoriuplatnicu2($paymentSlipData, $orderId)
     {
