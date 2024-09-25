@@ -156,10 +156,14 @@ class OrderController extends Controller
     
             $itemIds = array_column($request->items, 'id');
     
-            $existingOrder = Order::where('user_id', auth()->user()->id)
-                ->whereHas('orderDetails', function ($query) use ($itemIds) {
-                    $query->whereIn('product_detail_id', Cart::whereIn('id', $itemIds)->pluck('product_detail_id'));
-                })->first();
+            // Find an existing order but ONLY if it is not yet completed
+        $existingOrder = Order::where('user_id', auth()->user()->id)
+        ->whereHas('orderDetails', function ($query) use ($itemIds) {
+            $query->whereIn('product_detail_id', Cart::whereIn('id', $itemIds)->pluck('product_detail_id'));
+        })
+        // Only consider orders that are in "waiting" status (e.g., not paid or not completed)
+        ->whereIn('status', ['waitingBuyerPayment', 'processing'])
+        ->first();
     
             $total_discounted = 0;
             $total = 0;
@@ -268,7 +272,20 @@ class OrderController extends Controller
                         }
                     }
                 }
-    
+                        // ADD THIS BLOCK TO DELETE EXTRA ORDER DETAILS
+                        $existingOrderDetailIds = OrderDetail::where('order_id', $existingOrder->id)
+                        ->pluck('product_detail_id')->toArray();
+
+                    $itemProductDetailIds = Cart::whereIn('id', $itemIds)
+                        ->pluck('product_detail_id')->toArray();
+
+                    // Find and delete extra orderDetails that are not in the request
+                    $extraOrderDetailIds = array_diff($existingOrderDetailIds, $itemProductDetailIds);
+
+                    OrderDetail::whereIn('product_detail_id', $extraOrderDetailIds)
+                        ->where('order_id', $existingOrder->id)
+                        ->delete();
+
             // Generate the payment slip PDF
             $paymentSlipData = $this->generatePaymentSlipData($existingOrder, $request->items);
             $pdfPath = $this->stvoriuplatnicu2($paymentSlipData, $existingOrder->id);
