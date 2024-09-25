@@ -9,6 +9,7 @@ use NadzorServera\Skijasi\Controllers\Controller;
 use NadzorServera\Skijasi\Helpers\ApiResponse;
 use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
 use NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail;
+use NadzorServera\Skijasi\Module\Commerce\Models\OrderDetail;
 
 use Illuminate\Support\Facades\Log;
 
@@ -258,15 +259,21 @@ class CartController extends Controller
             $request->validate([
                 'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart',
             ]);
-
-            $cart = Cart::where('id', $request->id)->delete();
-
+    
+            $cart = Cart::findOrFail($request->id);
+    
+            // Delete associated OrderDetails
+            OrderDetail::where('product_detail_id', $cart->product_detail_id)->delete();
+    
+            // Delete the cart item
+            $cart->delete();
+    
             DB::commit();
-
+    
             return ApiResponse::success();
         } catch (Exception $e) {
             DB::rollback();
-
+    
             return ApiResponse::failed($e);
         }
     }
