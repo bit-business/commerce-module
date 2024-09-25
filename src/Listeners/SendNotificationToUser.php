@@ -68,18 +68,18 @@ class SendNotificationToUser
                 return;
         }
     
-        // Check for existing notifications within the last 2 minutes
-        $existingNotification = Notification::where('receiver_user_id', $event->user->id)
-            ->where('type', 'orderNotification')
-            ->where('title', $title)
-            ->where('content', $content)
-            ->where('created_at', '>=', now()->subMinutes(1)) // Only check notifications sent within the last 2 minutes
-            ->first();
+        // // Check for existing notifications within the last 2 minutes
+        // $existingNotification = Notification::where('receiver_user_id', $event->user->id)
+        //     ->where('type', 'orderNotification')
+        //     ->where('title', $title)
+        //     ->where('content', $content)
+        //     ->where('created_at', '>=', now()->subMinutes(1)) // Only check notifications sent within the last 2 minutes
+        //     ->first();
     
-        // If a notification was sent within the last 2 minutes, do not send another email
-        if ($existingNotification) {
-            return;
-        }
+        // // If a notification was sent within the last 2 minutes, do not send another email
+        // if ($existingNotification) {
+        //     return;
+        // }
     
         // Send the email
         if ($status === 'waitingBuyerPayment' && $event->pdfPath) {

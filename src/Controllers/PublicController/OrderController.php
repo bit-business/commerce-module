@@ -550,7 +550,10 @@ private function getProductNames($items)
                 return null;
             }
     
-            $filename = "pdf-" . $transactionUniqueCode . ".pdf";
+               // Generate a random 4-digit number
+        $randomNumber = rand(1000, 9999);
+        
+            $filename = "pdf-" . $transactionUniqueCode . "-" . $randomNumber . ".pdf";
             $filePath = storage_path('app/public/uplatnice/' . $filename);
     
             $bytesWritten = file_put_contents($filePath, $paymentSlipPdf);

@@ -260,6 +260,10 @@ public function done(Request $request)
 
         $user = User::find($order->user_id);
 
+        $this->updateStaroPlacanje($order->id);
+
+
+
         if ($user) {
             $paymentData = GetData::fetchPaymentDataForMember($user->id);
             $statusPlacanja = GetData::calculatePaymentStatus($paymentData);
@@ -276,14 +280,11 @@ public function done(Request $request)
 
         } 
 
-        $this->updateStaroPlacanje($order->id);
-
+    
 
         $this->deleteCartItems($order->id);
 
         event(new OrderStateWasChanged(User::where('id', $order->user_id)->first(), $order, 'done'));
-
-        
 
     
 
