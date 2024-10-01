@@ -155,6 +155,7 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
                 //uplatnice
                 Route::post('/stvoriuplatnicu', HelperRoute::getController('PublicController\OrderController@stvoriuplatnicu'));
 
+     Route::get('/gettotalcompletedorders', HelperRoute::getController('PublicController\OrderController@getTotalCompletedOrders'));
 
         });
 

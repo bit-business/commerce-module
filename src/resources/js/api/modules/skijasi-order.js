@@ -48,4 +48,11 @@ export default {
     return resource.post(`${apiPrefix}/v1/order/public/stvoriuplatnicu`, data);
   },
 
+
+
+  getTotalCompletedOrders() {
+    let url = apiPrefix + "/v1/order/public/gettotalcompletedorders";
+    return resource.get(url);
+  },
+
 };

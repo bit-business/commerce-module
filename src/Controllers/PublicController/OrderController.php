@@ -272,19 +272,19 @@ class OrderController extends Controller
                         }
                     }
                 }
-                        // ADD THIS BLOCK TO DELETE EXTRA ORDER DETAILS
-                        $existingOrderDetailIds = OrderDetail::where('order_id', $existingOrder->id)
-                        ->pluck('product_detail_id')->toArray();
 
-                    $itemProductDetailIds = Cart::whereIn('id', $itemIds)
-                        ->pluck('product_detail_id')->toArray();
-
-                    // Find and delete extra orderDetails that are not in the request
-                    $extraOrderDetailIds = array_diff($existingOrderDetailIds, $itemProductDetailIds);
-
-                    OrderDetail::whereIn('product_detail_id', $extraOrderDetailIds)
-                        ->where('order_id', $existingOrder->id)
-                        ->delete();
+                // ADD THIS BLOCK TO DELETE EXTRA ORDER DETAILS
+                $existingOrderDetailIds = OrderDetail::where('order_id', $existingOrder->id)
+                ->pluck('product_detail_id')->toArray();
+            
+            $itemProductDetailIds = collect($request->items)->pluck('product_detail_id')->toArray();
+            
+            $extraOrderDetailIds = array_diff($existingOrderDetailIds, $itemProductDetailIds);
+            
+            OrderDetail::whereIn('product_detail_id', $extraOrderDetailIds)
+                ->where('order_id', $existingOrder->id)
+                ->delete();
+                      
 
             // Generate the payment slip PDF
             $paymentSlipData = $this->generatePaymentSlipData($existingOrder, $request->items);
@@ -552,7 +552,7 @@ private function getProductNames($items)
     
                // Generate a random 4-digit number
         $randomNumber = rand(1000, 9999);
-        
+
             $filename = "pdf-" . $transactionUniqueCode . "-" . $randomNumber . ".pdf";
             $filePath = storage_path('app/public/uplatnice/' . $filename);
     
@@ -646,7 +646,25 @@ public function stvoriuplatnicu(Request $request)
     
     
 
+      public function getTotalCompletedOrders()
+      {
+          try {
+              $completedOrders = Order::where('status', 'done');
+              
+              $totalCompletedOrders = $completedOrders->count();
+              $totalPayed = $completedOrders->sum('payed');
+      
+      
+              return ApiResponse::success([
+                  'total_completed_orders' => $totalCompletedOrders,
+                  'total_payed' => $totalPayed
+              ]);
 
+              // ako ce trebat zaokruzit iznos 'total_payed' => round($totalPayed, 2)
+          } catch (Exception $e) {
+              return ApiResponse::failed($e);
+          }
+      }
 
 
 }

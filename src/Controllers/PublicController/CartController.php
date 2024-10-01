@@ -300,13 +300,21 @@ class CartController extends Controller
         }
     }
 
-      public function getTotalCartItems(Request $request)
-            {
-                try {
-                    $totalItems = Cart::sum('quantity');
-                    return ApiResponse::success(['total_items' => $totalItems]);
-                } catch (Exception $e) {
-                    return ApiResponse::failed($e);
-                }
-            }
+    public function getTotalCartItems(Request $request)
+    {
+        try {
+            $totalItems = Cart::sum('quantity');
+            
+            $totalPrice = Cart::join('skijasi_product_details', 'skijasi_carts.product_detail_id', '=', 'skijasi_product_details.id')
+                ->selectRaw('SUM(skijasi_carts.quantity * skijasi_product_details.price) as total_price')
+                ->value('total_price');
+    
+            return ApiResponse::success([
+                'total_items' => $totalItems,
+                'total_price' => round($totalPrice, 2)
+            ]);
+        } catch (Exception $e) {
+            return ApiResponse::failed($e);
+        }
+    }
 }
