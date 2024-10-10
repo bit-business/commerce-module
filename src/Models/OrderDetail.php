@@ -4,9 +4,13 @@ namespace NadzorServera\Skijasi\Module\Commerce\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class OrderDetail extends Model
 {
     protected $table = null;
+
+    use SoftDeletes;
 
     /**
      * Constructor for setting the table name dynamically.

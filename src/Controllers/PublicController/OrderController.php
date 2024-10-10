@@ -145,6 +145,7 @@ class OrderController extends Controller
     {
         DB::beginTransaction();
         try {
+            Log::info('0.Received checkout request on server:', $request->all());
             $request->validate([
                 'items' => 'required|array',
                 'items.*.id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
@@ -155,6 +156,7 @@ class OrderController extends Controller
             ]);
     
             $itemIds = array_column($request->items, 'id');
+            Log::info('1.Item IDs:', $itemIds);
     
             // Find an existing order but ONLY if it is not yet completed
         $existingOrder = Order::where('user_id', auth()->user()->id)
@@ -178,6 +180,7 @@ class OrderController extends Controller
                 $cart = Cart::find($item['id']);
     
                 $product_detail = ProductDetail::with('discount')->findOrFail($cart->product_detail_id);
+           
     
                 if ($product_detail->product->product_category_id != 30) {
                     if ($item['quantity'] > $product_detail->quantity) {
@@ -210,6 +213,7 @@ class OrderController extends Controller
     
             if ($existingOrder) {
                 // Update existing order
+                Log::info('2.Updating existing order:', ['order_id' => $existingOrder->id]);
                 $existingOrder->update([
                     'discounted' => $total_discounted,
                     'total' => $total,
@@ -223,6 +227,7 @@ class OrderController extends Controller
                     $cart = Cart::find($item['id']);
          
                     $product_detail = ProductDetail::findOrFail($cart->product_detail_id);
+                    Log::info('3.Found product detail(existingorder):', $product_detail->toArray());
                     $discount = null;
                     $discounted = 0;
                     if (!empty($product_detail->discount_id)) {
@@ -242,6 +247,7 @@ class OrderController extends Controller
                         ->first();
     
                     if ($orderDetail) {
+                        Log::info('4.Updating existing order detail:', ['order_detail_id' => $orderDetail->id]);
                         // Update existing order detail
                         $quantityDifference = $item['quantity'] - $orderDetail->quantity;
                         $orderDetail->update([
@@ -256,6 +262,7 @@ class OrderController extends Controller
                             $product_detail->save();
                         }
                     } else {
+                        Log::info('5.Creating new order detail for existing order');
                         // Create new order detail
                         OrderDetail::create([
                             'order_id' => $existingOrder->id,
@@ -265,7 +272,7 @@ class OrderController extends Controller
                             'discounted' => $discounted,
                             'quantity' => $item['quantity'],
                         ]);
-    
+
                         if ($product_detail->product->product_category_id != 30) {
                             $product_detail->quantity -= $item['quantity'];
                             $product_detail->save();
@@ -274,17 +281,35 @@ class OrderController extends Controller
                 }
 
                 // ADD THIS BLOCK TO DELETE EXTRA ORDER DETAILS
-                $existingOrderDetailIds = OrderDetail::where('order_id', $existingOrder->id)
-                ->pluck('product_detail_id')->toArray();
-            
-            $itemProductDetailIds = collect($request->items)->pluck('product_detail_id')->toArray();
-            
-            $extraOrderDetailIds = array_diff($existingOrderDetailIds, $itemProductDetailIds);
-            
-            OrderDetail::whereIn('product_detail_id', $extraOrderDetailIds)
-                ->where('order_id', $existingOrder->id)
-                ->delete();
-                      
+                 // Replace the existing deletion block with this:
+                        $existingOrderDetailIds = OrderDetail::where('order_id', $existingOrder->id)
+                        ->pluck('product_detail_id')
+                        ->map(function ($id) { return (string) $id; })
+                        ->toArray();
+
+                        $itemProductDetailIds = collect($request->items)
+                        ->pluck('product_detail_id')
+                        ->map(function ($id) { return (string) $id; })
+                        ->toArray();
+
+                        $extraOrderDetailIds = array_diff($existingOrderDetailIds, $itemProductDetailIds);
+                        Log::info('6.Extra order detail IDs:', ['ids' => $extraOrderDetailIds]);
+
+                        if (!empty($extraOrderDetailIds)) {
+                        $deletedCount = OrderDetail::where('order_id', $existingOrder->id)
+                            ->whereIn('product_detail_id', $extraOrderDetailIds)
+                            ->update(['deleted_at' => now()]);
+                        Log::info('7.Soft deleted order details count', [
+                            'count' => $deletedCount, 
+                            'order_id' => $existingOrder->id,
+                            'deleted_product_detail_ids' => $extraOrderDetailIds
+                        ]);
+                        } else {
+                        Log::info('7.No order details to delete', ['order_id' => $existingOrder->id]);
+                        }
+                                                
+                            
+                                            
 
             // Generate the payment slip PDF
             $paymentSlipData = $this->generatePaymentSlipData($existingOrder, $request->items);
@@ -324,10 +349,12 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'payment_type_option_id' => $request->payment_type_option_id,
             ]);
-    
+            Log::info('8.Created order payment for new order');
+
             foreach ($request->items as $item) {
                 $cart = Cart::find($item['id']);
                 $product_detail = ProductDetail::findOrFail($cart->product_detail_id);
+                Log::info('9.Found product detail for new order:', $product_detail->toArray());
                 $discount = null;
                 $discounted = 0;
                 if (!empty($product_detail->discount_id)) {
@@ -342,7 +369,7 @@ class OrderController extends Controller
                     }
                 }
     
-                OrderDetail::create([
+                $orderDetail = OrderDetail::create([
                     'order_id' => $order->id,
                     'product_detail_id' => $product_detail->id,
                     'discount_id' => $discount ? $discount->id : null,
@@ -350,6 +377,9 @@ class OrderController extends Controller
                     'discounted' => $discounted,
                     'quantity' => $item['quantity'],
                 ]);
+      
+    
+                Log::info('10.Created OrderDetail:', $orderDetail->toArray());
     
                 if ($product_detail->product->product_category_id != 30) {
                     $product_detail->quantity -= $item['quantity'];
@@ -370,7 +400,7 @@ class OrderController extends Controller
         event(new OrderStateWasChanged(auth()->user(), $order, 'waitingBuyerPayment', $pdfPath));
 
         DB::commit();
-
+      
         // Make sure this URL is correct and accessible
         $paymentSlipUrl = asset('storage/uplatnice/' . basename($pdfPath));
 
@@ -380,7 +410,7 @@ class OrderController extends Controller
         ]);
     } catch (Exception $e) {
         DB::rollback();
-        Log::error('Error in finish method: ' . $e->getMessage());
+        Log::error('12.Error in finish method: ' . $e->getMessage());
         return ApiResponse::failed($e);
     }
 }
@@ -657,7 +687,7 @@ public function stvoriuplatnicu(Request $request)
       
               return ApiResponse::success([
                   'total_completed_orders' => $totalCompletedOrders,
-                  'total_payed' => $totalPayed
+                 'total_payed' => round($totalPayed, 2)
               ]);
 
               // ako ce trebat zaokruzit iznos 'total_payed' => round($totalPayed, 2)

@@ -96,29 +96,42 @@ class OrderController extends Controller
                 'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Order,id',
                 'relation' => 'nullable',
             ]);
+    
             if (in_array(env('DB_CONNECTION'), ['pgsql'])) {
                 $order = Order::where('id', $request->id);
                 $order_data = $order->first();
                 $with = ['user'];
-
+    
                 $order_payment = OrderPayment::where('order_id', $order_data->id)->count();
                 if ($order_payment > 0) {
                     $with[] = 'orderPayment';
                 }
-
+    
                 $order_detail = OrderDetail::where('order_id', $order_data->id)->count();
                 if ($order_detail > 0) {
-                    $with[] = 'orderDetails.productDetail.product';
+                    $with = array_merge($with, [
+                        'orderDetails' => function ($query) {
+                            $query->withTrashed();
+                        },
+                        'orderDetails.productDetail.product',
+                    ]);
                 }
-
+    
                 $order = $order->with($with)->first();
             } else {
-                $order = Order::with('user', 'orderDetails.productDetail.product', 'orderPayment')
-                    ->where('id', $request->id)
-                    ->first();
+                $order = Order::with([
+                    'user',
+                    'orderDetails' => function ($query) {
+                        $query->withTrashed();
+                    },
+                    'orderDetails.productDetail.product',
+                    'orderPayment'
+                ])
+                ->where('id', $request->id)
+                ->first();
             }
+    
             $data['order'] = $order->toArray();
-
             return ApiResponse::success($data);
         } catch (Exception $e) {
             return ApiResponse::failed($e);
@@ -417,5 +430,14 @@ private function updateExistingPayment($cartItem)
     }
 }
 
+public function fetchNewOrdersCount()
+{
+    try {
+        $count = Order::where('status', 'waitingSellerConfirmation')->count();
+        return ApiResponse::success(['count' => $count]);
+    } catch (Exception $e) {
+        return ApiResponse::failed($e);
+    }
+}
 
 }

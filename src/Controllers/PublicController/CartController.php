@@ -11,6 +11,8 @@ use NadzorServera\Skijasi\Module\Commerce\Models\Cart;
 use NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail;
 use NadzorServera\Skijasi\Module\Commerce\Models\OrderDetail;
 
+use NadzorServera\Skijasi\Module\Commerce\Models\Order;
+
 use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
@@ -251,7 +253,6 @@ class CartController extends Controller
             return ApiResponse::failed($e);
         }
     }
-
     public function delete(Request $request)
     {
         DB::beginTransaction();
@@ -262,8 +263,25 @@ class CartController extends Controller
     
             $cart = Cart::findOrFail($request->id);
     
-            // Delete associated OrderDetails
-            OrderDetail::where('product_detail_id', $cart->product_detail_id)->delete();
+            // Find the associated Order
+            $order = Order::where('user_id', auth()->id())
+                ->whereHas('orderDetails', function ($query) use ($cart) {
+                    $query->where('product_detail_id', $cart->product_detail_id);
+                })
+                ->latest()
+                ->first();
+    
+            if ($order) {
+                // Delete only the specific OrderDetail
+                OrderDetail::where('order_id', $order->id)
+                    ->where('product_detail_id', $cart->product_detail_id)
+                    ->delete();
+    
+                Log::info('Deleted OrderDetail', [
+                    'order_id' => $order->id,
+                    'product_detail_id' => $cart->product_detail_id
+                ]);
+            }
     
             // Delete the cart item
             $cart->delete();
@@ -273,7 +291,7 @@ class CartController extends Controller
             return ApiResponse::success();
         } catch (Exception $e) {
             DB::rollback();
-    
+            Log::error('Error in delete method: ' . $e->getMessage());
             return ApiResponse::failed($e);
         }
     }

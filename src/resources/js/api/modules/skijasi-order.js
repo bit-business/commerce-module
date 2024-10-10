@@ -55,4 +55,8 @@ export default {
     return resource.get(url);
   },
 
+  totalneworders() {
+    let url = apiPrefix + "/v1/order/totalneworders";
+    return resource.get(url);
+  },
 };

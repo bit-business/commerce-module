@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 class Order extends Model
 {
     protected $table = null;
-
+    
     public $incrementing = false;
+    protected $keyType = 'string';
 
     /**
      * Constructor for setting the table name dynamically.

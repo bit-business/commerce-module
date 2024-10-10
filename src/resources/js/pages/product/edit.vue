@@ -768,7 +768,33 @@ watch: {
 
 
           this.$api.skijasiProduct
-            .edit({ ...this.product, items: this.items, id: this.$route.params.id,  galleryimages: this.product.galleryimages})
+          .edit({ 
+          ...this.product, 
+          items: this.items, 
+          id: this.$route.params.id, 
+          galleryimages: this.product.galleryimages,
+          formId: this.formIdString // Use formIdString here
+        })
+            .then((response) => {
+          // If a form is selected and we're not in the "Licence" category
+          if (this.formIdString && this.selectedCategoryName !== "Licenca" && this.product.slug) {
+            console.log("Updating form product slug", {
+              formId: this.formIdString,
+              selectedCategoryName: this.selectedCategoryName,
+              slug: this.product.slug
+            });
+            return this.$api.skijasiCommerceThemeConfiguration.updateFormProductSlug({
+              id: this.formIdString,
+              productslug: this.product.slug
+            });
+          }
+          console.log("Not updating form product slug", {
+            formId: this.formIdString,
+            selectedCategoryName: this.selectedCategoryName,
+            slug: this.product.slug
+          });
+          return response;
+        })
             .then((response) => {
               this.$closeLoader();
          

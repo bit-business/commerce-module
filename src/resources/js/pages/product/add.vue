@@ -779,6 +779,17 @@ export default {
           this.$api.skijasiProduct
             .add (productData)
             .then((response) => {
+          // If a form is selected and we're not in the "Licence" category
+          if (this.product.formId && this.selectedCategoryName !== "Licence" && this.product.slug) {
+            // Call the new API endpoint to update the form's productslug
+            return this.$api.skijasiCommerceThemeConfiguration.updateFormProductSlug({
+              id: this.product.formId,
+              productslug: this.product.slug
+            });
+          }
+          return response;
+        })
+            .then((response) => {
               this.$closeLoader();
               this.$router.push({ name: "ProductBrowse" });
             })

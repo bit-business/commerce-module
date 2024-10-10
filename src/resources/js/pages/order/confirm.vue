@@ -9,6 +9,7 @@
             <h3>{{ $t("orders.confirm.title.customerInfo") }}</h3>
           </div>
           <table class="skijasi-table">
+       
             <tr>
               <th>{{ $t("orders.confirm.header.recipientName") }}</th>
               <td>{{ order.user.name }} {{ order.user.username }}</td>
@@ -39,21 +40,26 @@
           </table>
         </vs-card>
         <vs-row>
-          <vs-col vs-w="6" v-for="(orderDetail, index) in order.orderDetails" :key="index">
-            <vs-card>
-              <div slot="media">
-                <img :src="orderDetail.productDetail.productImage">
-              </div>
-              <div>
-                <h2>{{ orderDetail.productDetail.product.name }}</h2>
-                <h1>{{ toCurrency(orderDetail.productDetail.price) }}</h1>
-                <p>Status člana: {{ orderDetail.productDetail.SKU }}</p>
-                <p>Iznos popusta: {{ toCurrency(orderDetail.discounted) }}</p>
-                <p>Količina: {{ orderDetail.quantity }} komada</p>
-              </div>
-            </vs-card>
-          </vs-col>
-        </vs-row>
+    <vs-col vs-w="3" v-for="(orderDetail, index) in order.orderDetails" :key="index">
+      <vs-card :class="{ 'deleted-item': orderDetail.deletedAt }">
+        <div slot="media">
+          <img v-if="orderDetail.productDetail && orderDetail.productDetail.productImage"
+               :src="orderDetail.productDetail.productImage"
+               class="w-8 h-8"
+               alt="Product Image">
+          <span v-else>Nema slike</span>
+        </div>
+        <div>
+          <h2>{{ orderDetail.productDetail.product.name }}</h2>
+          <h1>{{ toCurrency(orderDetail.productDetail.price) }}</h1>
+          <p>Status člana: {{ orderDetail.productDetail.name }}</p>
+          <p>Iznos popusta: {{ toCurrency(orderDetail.discounted) }}</p>
+          <p>Količina: {{ orderDetail.quantity }} komada</p>
+          <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je kao obrisao korisnik,ali ako nedostaje i naplaceno je sluzi za kontrolu i da se zna da je placanje za ovo</p>
+        </div>
+      </vs-card>
+    </vs-col>
+  </vs-row>
       </vs-col>
       <vs-col vs-lg="6">
         <vs-card>
@@ -68,6 +74,10 @@
                   <b>{{ getOrderStatus(order.status) }}</b>
                 </vs-chip>
               </td>
+            </tr>
+            <tr>
+              <th>Broj narudžbe</th>
+              <td>{{ order.id }}</td>
             </tr>
             <tr>
               <th>{{ $t("orders.confirm.header.user.email") }}</th>
@@ -343,7 +353,7 @@ export default {
           this.$closeLoader();
           this.order = response.data.order;
 
-          console.log("TEST PDF",(this.order));
+          console.log("TEST ORDER",(this.order));
         })
         .catch((error) => {
           this.$closeLoader();
@@ -469,5 +479,14 @@ iframe {
   border: none;
   width: 100%;
   height: 500px;
+}
+
+.deleted-item {
+  opacity: 0.5;
+}
+
+.deleted-notice {
+  color: red;
+  font-style: italic;
 }
 </style>
