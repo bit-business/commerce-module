@@ -127,53 +127,26 @@
 
 
             <vs-col vs-w="12" class="mb-3"  v-if="selectedCategoryName.trim() == 'Događanja'">   
-            <skijasi-editor
-              editorId="editor1"
-              v-model="product.desc"
-              size="12"
-                 class="custom-label"
-              :label="'Tekst za rubriku O SKIJALIŠTU'"
-              :placeholder="'Tekst za rubriku O SKIJALIŠTU'"
-              :alert="errors.desc"
-            ></skijasi-editor>
+  <skijasi-select 
+    v-model="selectedLanguage" 
+    :items="languageOptions"
+    label="Odaberi jezik"
+    size="12"
+    class="custom-label"
+    style="margin-bottom: 2rem !important; font-weight: bold;"
+  >
+  </skijasi-select>
 
-            <skijasi-editor
-              editorId="editor2"
-              v-model="product.desc2"
-              size="12"
-                 class="custom-label"
-              :label="'Tekst za rubriku INFORMACIJE'"
-              :placeholder="'Tekst za rubriku INFORMACIJE'"
-              :alert="errors.desc2"
-            ></skijasi-editor>
-            <skijasi-editor
-            editorId="editor3"
-              v-model="product.desc3"
-              size="12"
-                 class="custom-label"
-              :label="'Tekst za rubriku SMJEŠTAJ'"
-              :placeholder="'Tekst za rubriku SMJEŠTAJ'"
-              :alert="errors.desc3"
-            ></skijasi-editor>
-            <skijasi-editor
-            editorId="editor4"
-              v-model="product.desc4"
-              size="12"
-                 class="custom-label"
-              :label="'Tekst za rubriku PRIJEVOZ'"
-              :placeholder="'Tekst za rubriku PRIJEVOZ'"
-              :alert="errors.desc4"
-            ></skijasi-editor>
-            <skijasi-editor
-            editorId="editor5"
-              v-model="product.desc5"
-              size="12"
-                 class="custom-label"
-              :label="'Tekst za rubriku PLAĆANJE'"
-              :placeholder="'Tekst za rubriku PLAĆANJE'"
-              :alert="errors.desc5"
-            ></skijasi-editor>
-          </vs-col> 
+  <div v-for="(descField, index) in descFields" :key="descField" class="custom-editor-wrapper">
+  <skijasi-editor
+    :value="getFieldValue(descField)"
+    @input="updateFieldValue(descField, $event)"
+    :label="`${descLabels[descField]} (${selectedLanguage.toUpperCase()})`"
+    :placeholder="`Enter ${descLabels[descField]} in ${selectedLanguage}`"
+    :editorId="`editor-${descField}-${selectedLanguage}`"
+  ></skijasi-editor>
+</div>
+</vs-col>
 
        
 
@@ -466,15 +439,29 @@ export default {
       name: "",
       slug: "",
       productImage: "",
-      desc: "",
-      desc2: "",
-      desc3: "",
-      desc4: "",
-      desc5: "",
+      desc: '', desc2: '', desc3: '', desc4: '', desc5: '', // Croatian
+    descEn: '', desc2En: '', desc3En: '', desc4En: '', desc5En: '', // English
+    descIt: '', desc2It: '', desc3It: '', desc4It: '', desc5It: '', // Italian
+   
       formId: "",
 
       galleryimages: [],
     },
+
+    selectedLanguage: 'hr',
+  languageOptions: [
+    { label: 'Hrvatski', value: 'hr' },
+    { label: 'Engleski', value: 'en' },
+    { label: 'Talijanski', value: 'it' }
+  ],
+  descFields: ['desc', 'desc2', 'desc3', 'desc4', 'desc5'],
+  descLabels: {
+    desc: 'Tekst -> O Skijalištu',
+    desc2: 'Tekst -> Informacije',
+    desc3: 'Tekst -> Smještaj',
+    desc4: 'Tekst -> Prijevoz',
+    desc5: 'Tekst -> Prijava i plaćanje'
+  },
     
     addProductDetail: {
       discountId: '',
@@ -616,7 +603,11 @@ watch: {
       this.updateCategoryName();
     },
     immediate: true
-  }
+  },
+
+  selectedLanguage(newVal, oldVal) {
+    this.handleLanguageChange();
+  },
 },
 
   methods: {
@@ -630,10 +621,38 @@ watch: {
 },
 
 
+getDescFieldKey(field) {
+  if (this.selectedLanguage === 'hr') {
+    return field;
+  } else {
+    return `${field}${this.selectedLanguage.charAt(0).toUpperCase() + this.selectedLanguage.slice(1)}`;
+  }
+},
+
+getFieldValue(field) {
+  const key = this.getDescFieldKey(field);
+  return this.product[key] || '';
+},
+
+updateFieldValue(field, value) {
+  const key = this.getDescFieldKey(field);
+  this.$set(this.product, key, value);
+},
+
+handleLanguageChange() {
+  this.descFields.forEach(field => {
+    const key = this.getDescFieldKey(field);
+  });
+  this.$forceUpdate();
+},
+
+
+
+
     async getForms() {
           try {
         const response = await api.browseForm();
-        console.log("Raw API response:", response.data);
+     
         let formsData;
         if (typeof response.data === 'string') {
           formsData = JSON.parse(response.data);
@@ -673,26 +692,42 @@ watch: {
     symbol: this.$store.state.skijasi.config.currencySymbol,
   }).format();
 },
-    getProductDetail() {
-      this.$openLoader();
-      this.$api.skijasiProduct
-      .read({ id: this.$route.params.id, relation: [ 'productCategory', 'productDetails' ] })
-      .then((response) => {
-        this.$closeLoader();
-        this.product = response.data.product;
-        this.items = response.data.product.productDetails;
+getProductDetail() {
+  this.$openLoader();
+  this.$api.skijasiProduct
+    .read({ id: this.$route.params.id, relation: [ 'productCategory', 'productDetails' ] })
+    .then((response) => {
+      this.$closeLoader();
 
-        console.log("TEST get:", this.product);
-      })
-      .catch((error) => {
-        this.$closeLoader();
-        this.$vs.notify({
-          title: this.$t("alert.danger"),
-          text: error.message,
-          color: "danger",
-        });
+      const productData = response.data.product;
+      
+      // Ensure all language fields are present and reactive
+      this.descFields.forEach(field => {
+        this.$set(this.product, field, productData[field] || '');
+        this.$set(this.product, `${field}En`, productData[`${field}En`] || '');
+        this.$set(this.product, `${field}It`, productData[`${field}It`] || '');
       });
-    },
+
+      // Set other product properties
+      Object.keys(productData).forEach(key => {
+        if (!key.startsWith('desc')) {
+          this.$set(this.product, key, productData[key]);
+        }
+      });
+
+      this.items = productData.productDetails;
+
+   
+    })
+    .catch((error) => {
+      this.$closeLoader();
+      this.$vs.notify({
+        title: this.$t("alert.danger"),
+        text: error.message,
+        color: "danger",
+      });
+    });
+},
     async getProductCategoryList() {
       this.$openLoader();
       this.$api.skijasiProductCategory
@@ -742,6 +777,10 @@ watch: {
       this.productDetailDialog = true
       this.clearSelection()
     },
+
+
+
+
     submitForm() {
       this.errors = {};
       this.$v.product.$touch()
@@ -767,14 +806,24 @@ watch: {
 
 
 
-          this.$api.skijasiProduct
-          .edit({ 
-          ...this.product, 
-          items: this.items, 
-          id: this.$route.params.id, 
-          galleryimages: this.product.galleryimages,
-          formId: this.formIdString // Use formIdString here
-        })
+ 
+      const productData = {
+    ...this.product,
+    items: this.items,
+    id: this.$route.params.id,
+    galleryimages: this.product.galleryimages,
+    formId: this.formIdString,
+  };
+
+  // Ensure all language fields are included
+  this.descFields.forEach(field => {
+    productData[field] = this.product[field] || '';
+    productData[`${field}En`] = this.product[`${field}En`] || '';
+    productData[`${field}It`] = this.product[`${field}It`] || '';
+  });
+
+
+  this.$api.skijasiProduct.edit(productData)
             .then((response) => {
           // If a form is selected and we're not in the "Licence" category
           if (this.formIdString && this.selectedCategoryName !== "Licenca" && this.product.slug) {
@@ -957,6 +1006,18 @@ watch: {
  .vs-select--label {
   font-size: 1.1rem !important; /* Adjust size as needed */
   font-weight: bold !important; /* Make the font bold */
+}
+
+
+.custom-editor-wrapper {
+  margin-bottom: 1rem; 
+
+  .skijasi-editor__label {
+    font-weight: bold;
+    font-size: 1.2rem; 
+    margin-bottom: 0.5rem;
+    display: block; 
+  }
 }
 
 </style>

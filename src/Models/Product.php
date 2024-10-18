@@ -35,6 +35,12 @@ class Product extends Model
         'desc5',
         'product_image',
 
+         'desc_en', 'desc_it',
+        'desc2_en', 'desc2_it',
+        'desc3_en', 'desc3_it',
+        'desc4_en', 'desc4_it',
+        'desc5_en', 'desc5_it',
+
         'datum_pocetka',
         'datum_kraja',
         'mjesto',

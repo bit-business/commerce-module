@@ -119,7 +119,7 @@
               size="6"
               class="custom-label"
                 :label="'Sakrij događaj?'"
-              :placeholder="$t('Sakriti ovaj događaj?')"
+              :placeholder="'Sakriti ovaj događaj?'"
               :alert="errors.sakrij"
             ></skijasi-switch>
             <skijasi-switch
@@ -127,7 +127,7 @@
               size="6"
               class="custom-label"
                 :label="'Zatvori prijave?'"
-              :placeholder="$t('Zatvori prijave?')"
+              :placeholder="'Zatvori prijave?'"
               :alert="errors.zatvoriprijave"
             ></skijasi-switch>
           </vs-col>
@@ -153,65 +153,37 @@
 
 
             <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
-            <skijasi-editor
-              v-model="product.desc"
-              size="12"
-                   class="custom-label"
-              :label="'Tekst --> O Skijalištu'"
-              :placeholder="$t('product.add.field.desc.placeholder')"
-              :alert="errors.desc"
-               editorId="desc-editor"
-            ></skijasi-editor>
-          </vs-col>
+              <skijasi-select 
+  v-model="selectedLanguage" 
+  :items="languageOptions"
+  label="Odaberi jezik"
+  size="12"
+  class="custom-label"
+  style="margin-bottom: 2rem !important; font-weight: bold;"
+>
+      <skijasi-select label="Hrvatski" value="hr">
+        <img src="/storage/slike/ikonahrvatska.svg" alt="Croatian Flag" class="flag-icon" />
+        Hrvatski
+      </skijasi-select>
+      <skijasi-select label="Engleski" value="en">
+        <img src="/storage/slike/ikonaengleska.svg" alt="English Flag" class="flag-icon" />
+        Engleski
+      </skijasi-select>
+      <skijasi-select label="Talijanski" value="it">
+        <img src="/storage/slike/ikonattalijanska.svg" alt="Italian Flag" class="flag-icon" />
+        Talijanski
+      </skijasi-select>
+    </skijasi-select>
 
-
-          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
-            <skijasi-editor
-              v-model="product.desc2"
-              size="12"
-                   class="custom-label"
-              :label="'Tekst --> Informacije'"
-              :placeholder="$t('product.add.field.desc2.placeholder')"
-              :alert="errors.desc2"
-                  editorId="desc2-editor"
-            ></skijasi-editor>
+    <div v-for="(descField, index) in descFields" :key="descField" class="custom-editor-wrapper">
+  <skijasi-editor
+    v-model="product[getDescFieldKey(descField)]"
+    :label="`${descLabels[descField]} (${selectedLanguage.toUpperCase()})`"
+    :placeholder="`Enter ${descLabels[descField]} in ${selectedLanguage}`"
+    :editorId="`editor-${descField}-${selectedLanguage}`"
+  ></skijasi-editor>
+</div>
           </vs-col>
-
-          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
-            <skijasi-editor
-              v-model="product.desc3"
-              size="12"
-                   class="custom-label"
-              :label="'Tekst --> Smještaj'"
-              :placeholder="$t('product.add.field.desc3.placeholder')"
-              :alert="errors.desc3"
-                  editorId="desc3-editor"
-            ></skijasi-editor>
-          </vs-col>
-
-          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
-            <skijasi-editor
-              v-model="product.desc4"
-              size="12"
-                   class="custom-label"
-          :label="'Tekst --> Prijevoz'"
-              :placeholder="$t('product.add.field.desc4.placeholder')"
-              :alert="errors.desc4"
-                  editorId="desc4-editor"
-            ></skijasi-editor>
-          </vs-col>
-          <vs-col v-if="selectedCategoryName.trim() == 'Događanja'">
-            <skijasi-editor
-              v-model="product.desc5"
-              size="12"
-              class="custom-label"
-                :label="'Tekst -> Prijava i plaćanje'"
-              :placeholder="$t('product.add.field.desc5.placeholder')"
-              :alert="errors.desc5"
-                  editorId="desc5-editor"
-            ></skijasi-editor>
-          </vs-col>
-
 
     
 
@@ -500,16 +472,23 @@ export default {
       },
     
     errors: {},
+
+    descLabels: {
+    desc: 'Tekst -> O Skijalištu',
+    desc2: 'Tekst -> Informacije',
+    desc3: 'Tekst -> Smještaj',
+    desc4: 'Tekst -> Prijevoz',
+    desc5: 'Tekst -> Prijava i plaćanje'
+  },
+
     product: {
       productCategoryId: "",
       name: "",
       slug: "",
       productImage: "",
-      desc: "",
-      desc2: "",
-      desc3: "",
-      desc4: "",
-      desc5: "",
+      desc: '', desc2: '', desc3: '', desc4: '', desc5: '', // Croatian
+    descEn: '', desc2En: '', desc3En: '', desc4En: '', desc5En: '', // English
+    descIt: '', desc2It: '', desc3It: '', desc4It: '', desc5It: '', // Italian
       datum_pocetka: "",
       datum_kraja: "",
       form_id: "",
@@ -532,6 +511,13 @@ export default {
       SKU: null,
       // productImage: ''
     },
+    selectedLanguage: 'hr',
+  languageOptions: [
+    { label: 'Hrvatski', value: 'hr' },
+    { label: 'Engleski', value: 'en' },
+    { label: 'Talijanski', value: 'it' }
+  ],
+      descFields: ['desc', 'desc2', 'desc3', 'desc4', 'desc5'],
     categories: [],
     discounts: [],
     items: [],
@@ -628,7 +614,11 @@ export default {
       handler(val) {
         this.product.slug = this.$helper.generateSlug(val)
       }
-    }
+    },
+    selectedLanguage() {
+    // Force reactivity update
+    this.$forceUpdate();
+  }
   },
   mounted() {
     this.getProductCategoryList()
@@ -647,6 +637,18 @@ export default {
 },
 
   methods: {
+    getDescFieldKey(field) {
+  if (this.selectedLanguage === 'hr') {
+    return field;
+  } else {
+    return `${field}${this.selectedLanguage.charAt(0).toUpperCase() + this.selectedLanguage.slice(1)}`;
+  }
+},
+
+    getDescFieldValue(field) {
+      return this.product[this.getDescFieldKey(field)];
+    },
+
 
     updateCategoryName() {
     const selectedCategory = this.categories.find(cat => cat.value == this.product.productCategoryId);
@@ -771,13 +773,23 @@ export default {
          this.product.datum_kraja = moment(this.product.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
       } }
 
+
       const productData = {
-    ...this.product, items: this.items,
+    ...this.product,
+    items: this.items,
     galleryimages: this.product.galleryimages,
   };
 
-          this.$api.skijasiProduct
-            .add (productData)
+  // Ensure all language fields are included
+  this.descFields.forEach(field => {
+    productData[field] = this.product[field] || '';
+    productData[`${field}En`] = this.product[`${field}En`] || '';
+    productData[`${field}It`] = this.product[`${field}It`] || '';
+  });
+
+  console.log('Submitting product data:', productData);
+
+  this.$api.skijasiProduct.add(productData)
             .then((response) => {
           // If a form is selected and we're not in the "Licence" category
           if (this.product.formId && this.selectedCategoryName !== "Licence" && this.product.slug) {
@@ -899,13 +911,24 @@ export default {
 .custom-label .skijasi-upload-image-dogadaji__label,
 .custom-label .skijasi-date__label,
 .custom-label .skijasi-editor__label {
-  font-size: 1.1rem; /* Adjust as needed */
+  font-size: 1.1rem;
   font-weight: bold;
 }
 
  .vs__select-label {
-  font-size: 1.1rem !important; /* Adjust size as needed */
-  font-weight: bold !important; /* Make the font bold */
+  font-size: 1.5rem !important; 
+  font-weight: bold !important; 
 }
 
+
+.custom-editor-wrapper {
+  margin-bottom: 1rem; 
+
+.skijasi-editor__label {
+  font-weight: bold;
+    font-size: 1.2rem; 
+    margin-bottom: 0.5rem;
+    display: block; 
+  }
+}
 </style>
