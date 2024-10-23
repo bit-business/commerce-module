@@ -161,18 +161,37 @@ class CartController extends Controller
                     'quantity' => $request->quantity,
                 ]);
             } else {
+
+                if ($product_detail->product->product_category_id == 31) {
+                    $newQuantity = $request->quantity;
+                    if ($product_detail->quantity < $newQuantity) {
+                        Log::info('Not enough stock for cart update. Product detail quantity: ' . $product_detail->quantity . ', New cart quantity: ' . $newQuantity);
+                        return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
+                    }
+                    $cart->update([
+                        'quantity' => $newQuantity,
+                    ]);
+                } else {
+                    
+            
+
+
                 $newQuantity = $cart->quantity;
                 if ($product_detail->quantity < $newQuantity) {
                     Log::info('Not enough stock for cart update. Product detail quantity: ' . $product_detail->quantity . ', New cart quantity: ' . $newQuantity);
                     return ApiResponse::failed(__('skijasi_commerce::validation.stock_not_available'));
                 }
+                
                 $cart->update([
                     'quantity' => $newQuantity,
                 ]);
+
+
+            }
             }
     
-            // Reduce the quantity only if the product category is not 30
-            if ($product_detail->product->product_category_id == 30) {
+            // Reduce the quantity only if the product category is 30
+            if ($product_detail->product->product_category_id == 30 || $product_detail->product->product_category_id == 31) {
                 $product_detail->quantity -= $request->quantity;
                 $product_detail->save();
             }

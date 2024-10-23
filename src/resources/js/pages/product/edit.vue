@@ -589,10 +589,12 @@ export default {
 
   formIdString: {
       get() {
-        return String(this.product.formId);
+        // Return empty string if formId is null/undefined
+        return this.product.formId ? String(this.product.formId) : '';
       },
       set(value) {
-        this.product.formId = value !== '' ? Number(value) : null;
+        // Convert empty string to null, otherwise convert to number
+        this.product.formId = value === '' ? null : Number(value);
       }
     }
   
@@ -783,71 +785,64 @@ getProductDetail() {
 
     submitForm() {
       this.errors = {};
-      this.$v.product.$touch()
+      this.$v.product.$touch();
 
       if (!this.$v.product.$invalid) {
-        this.$v.product.$reset()
+        this.$v.product.$reset();
         try {
           this.$openLoader();
 
-          if (this.selectedCategoryName == "Licenca") {
-                delete this.product.datum_pocetka;
-                delete this.product.datum_kraja;
-                delete this.product.formId;
-                delete this.product.galleryimages;
-            } else{
-                 // Format the datum_pocetka and datum_kraja using moment
-      if (this.product.datum_pocetka) {
-         this.product.datum_pocetka = moment(this.product.datum_pocetka).format('YYYY-MM-DD HH:mm:ss');
-      }
-      if (this.product.datum_kraja) {
-         this.product.datum_kraja = moment(this.product.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
-      } }
+          // Create a clean product data object
+          const productData = {
+            ...this.product,
+            items: this.items,
+            id: this.$route.params.id,
+            // Ensure galleryimages is null if empty
+            galleryimages: this.product.galleryimages || null,
+            // Handle formId properly
+            formId: this.product.formId || null
+          };
 
-
-
- 
-      const productData = {
-    ...this.product,
-    items: this.items,
-    id: this.$route.params.id,
-    galleryimages: this.product.galleryimages,
-    formId: this.formIdString,
-  };
-
-  // Ensure all language fields are included
-  this.descFields.forEach(field => {
-    productData[field] = this.product[field] || '';
-    productData[`${field}En`] = this.product[`${field}En`] || '';
-    productData[`${field}It`] = this.product[`${field}It`] || '';
-  });
-
-
-  this.$api.skijasiProduct.edit(productData)
-            .then((response) => {
-          // If a form is selected and we're not in the "Licence" category
-          if (this.formIdString && this.selectedCategoryName !== "Licenca" && this.product.slug) {
-            console.log("Updating form product slug", {
-              formId: this.formIdString,
-              selectedCategoryName: this.selectedCategoryName,
-              slug: this.product.slug
-            });
-            return this.$api.skijasiCommerceThemeConfiguration.updateFormProductSlug({
-              id: this.formIdString,
-              productslug: this.product.slug
-            });
+          // Remove properties if not in Događanja category
+          if (this.selectedCategoryName !== "Događanja") {
+            delete productData.datum_pocetka;
+            delete productData.datum_kraja;
+            delete productData.formId;
+            delete productData.galleryimages;
+          } else {
+            // Format dates if they exist
+            if (productData.datum_pocetka) {
+              productData.datum_pocetka = moment(productData.datum_pocetka).format('YYYY-MM-DD HH:mm:ss');
+            }
+            if (productData.datum_kraja) {
+              productData.datum_kraja = moment(productData.datum_kraja).format('YYYY-MM-DD HH:mm:ss');
+            }
           }
-          console.log("Not updating form product slug", {
-            formId: this.formIdString,
-            selectedCategoryName: this.selectedCategoryName,
-            slug: this.product.slug
+
+          // Add all language fields
+          this.descFields.forEach(field => {
+            productData[field] = this.product[field] || '';
+            productData[`${field}En`] = this.product[`${field}En`] || '';
+            productData[`${field}It`] = this.product[`${field}It`] || '';
           });
-          return response;
-        })
+
+          // Submit the data
+          this.$api.skijasiProduct.edit(productData)
+            .then((response) => {
+              // Update form product slug if needed
+              if (this.product.formId && 
+                  this.selectedCategoryName === "Događanja" && 
+                  this.product.slug) {
+                return this.$api.skijasiCommerceThemeConfiguration.updateFormProductSlug({
+                  id: this.product.formId,
+                  productslug: this.product.slug
+                });
+              }
+              return response;
+            })
             .then((response) => {
               this.$closeLoader();
-         
-               this.$router.push({ name: "ProductBrowse" });
+              this.$router.push({ name: "ProductBrowse" });
             })
             .catch((error) => {
               this.errors = error.errors;
@@ -859,7 +854,7 @@ getProductDetail() {
               });
             });
         } catch (error) {
-          this.errors = error.data
+          this.errors = error.data;
           this.$vs.notify({
             title: this.$t("alert.danger"),
             text: error.message,
@@ -868,6 +863,8 @@ getProductDetail() {
         }
       }
     },
+
+    
     addProductDetailToProduct() {
       this.$v.addProductDetail.$touch()
 
