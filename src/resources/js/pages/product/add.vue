@@ -175,6 +175,35 @@
       </skijasi-select>
     </skijasi-select>
 
+
+
+    <vs-col vs-w="7" class="mb-3" v-if="selectedLanguage === 'en'">
+  <skijasi-text
+    v-model="product.nameEn"
+    size="12"
+    :label="'Engleski naziv (EN)'"
+    :placeholder="'Upišite engleski prijevod naziva'"
+    :alert="errors.nameEn"
+    class="custom-label"
+    style="margin-bottom: 2rem !important; font-weight: bold;"
+  ></skijasi-text>
+
+</vs-col>
+
+<vs-col vs-w="7" class="mb-3" v-if="selectedLanguage === 'it'">
+  <skijasi-text
+    v-model="product.nameIt"
+    size="12"
+    :label="'Talijanski naziv (IT)'"
+    :placeholder="'Upišite talijanski prijevod naziva'"
+    :alert="errors.nameIt"
+    class="custom-label"
+    style="margin-bottom: 2rem !important; font-weight: bold;"
+  ></skijasi-text>
+ 
+</vs-col>
+
+
     <div v-for="(descField, index) in descFields" :key="descField" class="custom-editor-wrapper">
   <skijasi-editor
     v-model="product[getDescFieldKey(descField)]"
@@ -487,8 +516,8 @@ export default {
       slug: "",
       productImage: "",
       desc: '', desc2: '', desc3: '', desc4: '', desc5: '', // Croatian
-    descEn: '', desc2En: '', desc3En: '', desc4En: '', desc5En: '', // English
-    descIt: '', desc2It: '', desc3It: '', desc4It: '', desc5It: '', // Italian
+    nameEn: '', descEn: '', desc2En: '', desc3En: '', desc4En: '', desc5En: '', // English
+    nameIt: '', descIt: '', desc2It: '', desc3It: '', desc4It: '', desc5It: '', // Italian
       datum_pocetka: "",
       datum_kraja: "",
       form_id: "",

@@ -19,12 +19,20 @@ export default {
     let url = ep + qs;
     return resource.get(url);
   },
+  // delete(data) {
+  //   let paramData = {
+  //     data: data,
+  //   };
+  //   return resource.delete(apiPrefix + "/v1/cart/delete", paramData);
+  // },  dobio api success greske
   delete(data) {
-    let paramData = {
-      data: data,
-    };
-    return resource.delete(apiPrefix + "/v1/cart/delete", paramData);
+    return resource.post(apiPrefix + "/v1/cart/delete", { 
+      _method: 'DELETE',
+      id: data
+    });
   },
+
+
 
   edit(data) {
     return resource.put(apiPrefix + "/v1/cart/edit", data);

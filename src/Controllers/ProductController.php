@@ -108,6 +108,9 @@ class ProductController extends Controller
                 'datum_pocetka' => $request->datum_pocetka,
                 'datum_kraja' => $request->datum_kraja,
 
+                'name_en' => $request->name_en,
+                'name_it' => $request->name_it,
+
                 'desc' => $request->desc,
                 'desc_en' => $request->desc_en,
                 'desc_it' => $request->desc_it,
@@ -253,6 +256,9 @@ class ProductController extends Controller
                 'name' => 'required|string|max:255',
                 'product_image' => 'required|string',
                 'desc' => 'nullable|string',
+
+                'name_en' => 'nullable|string|max:255',
+                'name_it' => 'nullable|string|max:255',
                 'desc_en' => 'nullable|string',
                 'desc_it' => 'nullable|string',
                 'desc2' => 'nullable|string',
@@ -284,6 +290,10 @@ class ProductController extends Controller
             $product->desc3 = $request->desc3;
             $product->desc4 = $request->desc4;
             $product->desc5 = $request->desc5;
+
+            $product->name_en = $request->name_en;
+            $product->name_it = $request->name_it;
+
             $product->desc_en = $request->desc_en;
             $product->desc2_en = $request->desc2_en;
             $product->desc3_en = $request->desc3_en;

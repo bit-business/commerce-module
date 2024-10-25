@@ -35,6 +35,9 @@ class Product extends Model
         'desc5',
         'product_image',
 
+
+        'name_en', 'name_it',
+
          'desc_en', 'desc_it',
         'desc2_en', 'desc2_it',
         'desc3_en', 'desc3_it',
