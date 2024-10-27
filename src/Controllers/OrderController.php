@@ -21,6 +21,10 @@ use NadzorServera\Skijasi\Helpers\GetData;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+use NadzorServera\Skijasi\Module\Commerce\Models\OrderShipping;
+use NadzorServera\Skijasi\Module\Commerce\Models\ProductDetail;
+
+
 class OrderController extends Controller
 {
     public function browse(Request $request)
@@ -439,5 +443,46 @@ public function fetchNewOrdersCount()
         return ApiResponse::failed($e);
     }
 }
+
+
+
+
+public function copyToShipping(Request $request)
+{
+    try {
+        $request->validate([
+            'orderId' => 'required|exists:skijasi_orders,id',
+            'productDetailId' => 'required|exists:skijasi_product_details,id',
+            'quantity' => 'required|integer',
+            'price' => 'required|numeric',
+            'discounted' => 'required|numeric',
+        ]);
+
+        // Fetch the product name through the relationship
+        $productDetail = ProductDetail::with('product')
+            ->find($request->productDetailId);
+
+        if (!$productDetail || !$productDetail->product) {
+            return ApiResponse::failed('Product not found');
+        }
+
+        // Create new shipping record with product name
+        OrderShipping::create([
+            'order_id' => $request->orderId,
+            'product_detail_id' => $request->productDetailId,
+            'product_name' => $productDetail->product->name,
+            'product_image' => $productDetail->product_image ?? null, 
+            'quantity' => $request->quantity,
+            'price' => $request->price,
+            'discounted' => $request->discounted,
+        ]);
+
+        return ApiResponse::success(['message' => 'Uspješno dodano u obradu!']);
+    } catch (Exception $e) {
+        return ApiResponse::failed($e);
+    }
+}
+
+
 
 }

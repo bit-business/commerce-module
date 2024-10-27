@@ -55,6 +55,16 @@
           <p>Status člana: {{ orderDetail.productDetail.name }}</p>
           <p>Iznos popusta: {{ toCurrency(orderDetail.discounted) }}</p>
           <p>Količina: {{ orderDetail.quantity }} komada</p>
+          <vs-button 
+              type="border" 
+              color="primary" 
+              size="small" 
+              @click="copyToShipping(orderDetail)"
+              :loading="isLoading && loadingDetailId === orderDetail.id"
+            >
+              <vs-icon icon="content_copy"></vs-icon>
+              Kopiraj u otpremnicu
+            </vs-button>
           <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je kao obrisao korisnik,ali ako nedostaje i naplaceno je sluzi za kontrolu i da se zna da je placanje za ovo</p>
         </div>
       </vs-card>
@@ -242,10 +252,14 @@
 <script>
 import moment from "moment";
 import currency from 'currency.js';
+import { or } from "vuelidate/lib/validators";
 export default {
   name: "OrderConfirm",
   components: {},
   data: () => ({
+    isLoading: false,
+    loadingDetailId: null,
+
     trackingNumber: null,
     trackingNumberDialog: false,
     cancelDialog: false,
@@ -284,6 +298,42 @@ export default {
     
   },
   methods: {
+
+    copyToShipping(orderDetail) {
+    this.isLoading = true;
+    this.loadingDetailId = orderDetail.id;
+
+
+    this.$api.skijasiOrder
+      .copyToShipping({
+        orderDetailId: orderDetail.id,
+        orderId: this.order.id,
+        productDetailId: orderDetail.productDetailId,  
+        quantity: orderDetail.quantity,
+        price: orderDetail.price,
+        discounted: orderDetail.discounted
+      })
+      .then((response) => {
+        this.$vs.notify({
+          title: "Uspješno",
+          text: "Dodano u tablicu za obradu!",
+          color: "success"
+        });
+      })
+      .catch((error) => {
+        this.$vs.notify({
+          title: this.$t("alert.danger"),
+          text: error.message,
+          color: "danger"
+        });
+      })
+      .finally(() => {
+        this.isLoading = false;
+        this.loadingDetailId = null;
+      });
+  },
+
+
     handleIframeError() {
     console.error('Error loading iframe, falling back to link');
   },
@@ -488,5 +538,11 @@ iframe {
 .deleted-notice {
   color: red;
   font-style: italic;
+}
+
+
+.vs-button--small {
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 </style>

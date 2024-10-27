@@ -59,4 +59,11 @@ export default {
     let url = apiPrefix + "/v1/order/totalneworders";
     return resource.get(url);
   },
+
+
+  copyToShipping(data) {
+    return resource.post(`${apiPrefix}/v1/order/copy-to-shipping`, data);
+  },
+
+  
 };
