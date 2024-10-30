@@ -48,7 +48,7 @@ class OrderController extends Controller
             $search = $request->search;
             $status = $request->status;
           
-            if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 9, 2439, 4417])) {
+            if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 8, 9, 2439, 4417])) {
                 $orders = Order::when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation));
                 })
