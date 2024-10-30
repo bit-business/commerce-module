@@ -85,22 +85,23 @@ class CartController extends Controller
         }
     }
 
+
     public function delete(Request $request)
     {
         try {
             $request->validate([
-                'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id',
+                'id' => 'required|array',  // Changed to accept array of IDs
+                'id.*' => 'exists:NadzorServera\Skijasi\Module\Commerce\Models\Cart,id'
             ]);
 
-            $cart = Cart::findOrFail($request->id);
-            $cart->delete();
+            // Use whereIn to delete multiple records
+            Cart::whereIn('id', $request->id)->delete();
 
             return ApiResponse::success(['message' => 'Zaduzenje/kosarica obrisana uspjesno']);
         } catch (Exception $e) {
             return ApiResponse::failed($e);
         }
     }
-
 
     public function edit(Request $request)
     {

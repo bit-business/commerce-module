@@ -456,6 +456,8 @@ public function copyToShipping(Request $request)
             'quantity' => 'required|integer',
             'price' => 'required|numeric',
             'discounted' => 'required|numeric',
+            'name' => 'required|string',       
+            'username' => 'required|string',  
         ]);
 
         // Fetch the product name through the relationship
@@ -475,6 +477,8 @@ public function copyToShipping(Request $request)
             'quantity' => $request->quantity,
             'price' => $request->price,
             'discounted' => $request->discounted,
+            'name' => $request->name,         
+            'username' => $request->username,  
         ]);
 
         return ApiResponse::success(['message' => 'Uspješno dodano u obradu!']);

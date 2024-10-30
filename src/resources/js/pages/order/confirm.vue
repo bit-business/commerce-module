@@ -311,7 +311,9 @@ export default {
         productDetailId: orderDetail.productDetailId,  
         quantity: orderDetail.quantity,
         price: orderDetail.price,
-        discounted: orderDetail.discounted
+        discounted: orderDetail.discounted,
+        name: this.order.user.name,           
+        username: this.order.user.username  
       })
       .then((response) => {
         this.$vs.notify({

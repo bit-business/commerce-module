@@ -29,6 +29,8 @@ class OrderShipping extends Model
         'quantity',
         'price',
         'discounted',
+        'name',          
+        'username',  
     ];
 
     /**
