@@ -3,7 +3,7 @@
     <skijasi-breadcrumb-row>
     </skijasi-breadcrumb-row>
     <vs-row v-if="$helper.isAllowed('confirm_orders')">
-      <vs-col vs-lg="6">
+      <vs-col :vs-lg="6" :vs-sm="12" :vs-xs="12">
         <vs-card>
           <div slot="header">
             <h3>{{ $t("orders.confirm.title.customerInfo") }}</h3>
@@ -40,7 +40,14 @@
           </table>
         </vs-card>
         <vs-row>
-    <vs-col vs-w="3" v-for="(orderDetail, index) in order.orderDetails" :key="index">
+          <vs-col 
+  :vs-sm="12"
+  :vs-md="6"
+  :vs-lg="3"
+  v-for="(orderDetail, index) in order.orderDetails" 
+  :key="index"
+>
+   
       <vs-card :class="{ 'deleted-item': orderDetail.deletedAt }">
         <div slot="media">
           <img v-if="orderDetail.productDetail && orderDetail.productDetail.productImage"
@@ -71,7 +78,7 @@
     </vs-col>
   </vs-row>
       </vs-col>
-      <vs-col vs-lg="6">
+      <vs-col :vs-lg="6" :vs-sm="12" :vs-xs="12">
         <vs-card>
           <div slot="header">
             <h3>{{ $t("orders.confirm.title.orderInfo") }}</h3>
@@ -546,5 +553,106 @@ iframe {
 .vs-button--small {
   margin-top: 8px;
   margin-bottom: 8px;
+}
+
+
+/* Responsive table styles */
+@media screen and (max-width: 768px) {
+  .skijasi-table {
+    display: block;
+    width: 100%;
+  }
+  
+  .skijasi-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .skijasi-table th,
+  .skijasi-table td {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem;
+  }
+  
+  .skijasi-table th {
+    font-weight: bold;
+    background-color: #f8f8f8;
+  }
+
+  /* Card adjustments */
+  .vs-card {
+    margin-bottom: 1rem;
+  }
+
+  /* Image responsiveness */
+  .w-100 {
+    max-width: 100%;
+  }
+
+  /* Button adjustments */
+  .vs-button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  /* Iframe adjustment */
+  iframe {
+    max-height: 300px;
+  }
+}
+
+/* Additional responsive adjustments */
+@media screen and (max-width: 480px) {
+  .vs-chip {
+    width: 100%;
+    text-align: center;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+}
+
+/* Fix for product cards */
+.vs-row .vs-col {
+  margin-bottom: 1rem;
+}
+
+/* Make vs-popup responsive */
+@media screen and (max-width: 768px) {
+  .vs-popup {
+    width: 90% !important;
+    margin: 5% !important;
+  }
+}
+
+/* Ensure buttons stack nicely on mobile */
+@media screen and (max-width: 768px) {
+  td .vs-button {
+    display: block;
+    margin: 0.5rem 0;
+    width: 100%;
+  }
+}
+
+/* Add some breathing room between sections */
+.vs-card {
+  margin-bottom: 1rem;
+}
+
+/* Ensure table cells don't get too squished */
+.skijasi-table td, 
+.skijasi-table th {
+  word-break: break-word;
+  min-width: 100px;
+}
+
+/* Make sure images don't overflow */
+img {
+  max-width: 100%;
+  height: auto;
 }
 </style>
