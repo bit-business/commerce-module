@@ -53,6 +53,7 @@ class Product extends Model
 
         'sakrij',
         'zatvoriprijave',
+        'prijaveposebni',
 
         'created_at',
         'updated_at',

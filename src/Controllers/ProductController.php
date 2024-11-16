@@ -95,6 +95,7 @@ class ProductController extends Controller
                 'galleryimages.*' => 'string',
                 'sakrij' => 'nullable',
                 'zatvoriprijave' => 'nullable',
+                'prijaveposebni' => 'nullable',
             ]);
 
             $slug = $this->generateSlug($request->name);
@@ -130,6 +131,7 @@ class ProductController extends Controller
                 'form_id' => $request->form_id,
                 'sakrij' => $request->sakrij,
                 'zatvoriprijave' => $request->zatvoriprijave,
+                'prijaveposebni' => $request->prijaveposebni,
                 'galleryimages' => json_encode($request->galleryimages),
             ]);
 
@@ -278,6 +280,8 @@ class ProductController extends Controller
                 'galleryimages.*' => 'string',
             ]);
 
+     
+
             $product = Product::where('id', $request->id)->first();
             $product->product_category_id = $request->product_category_id;
             $product->datum_pocetka = $request->datum_pocetka;
@@ -308,6 +312,18 @@ class ProductController extends Controller
             $product->galleryimages = json_encode($request->galleryimages);
             $product->sakrij = $request->sakrij;
             $product->zatvoriprijave = $request->zatvoriprijave;
+
+            if ($request->prijaveposebni) {
+                // Clean up email addresses
+                $emails = array_map(
+                    'trim',
+                    explode(',', $request->prijaveposebni)
+                );
+                $product->prijaveposebni = implode(',', array_filter($emails));
+            } else {
+                $product->prijaveposebni = null;
+            }
+            
             
             $product->save();
 

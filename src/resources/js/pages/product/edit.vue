@@ -126,6 +126,20 @@
             </vs-col>
 
 
+            <vs-col vs-w="12" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+  <skijasi-textarea
+    v-model="product.prijaveposebni"
+    size="12"
+    class="custom-label"
+    :label="'Posebne dozvole (email adrese)'"
+    :placeholder="'Unesite email adrese odvojene zarezom (npr. email1@test.com, email2@test.com)'"
+    :alert="errors.prijaveposebni"
+    style="margin-bottom: 8px !important;"
+  ></skijasi-textarea>
+  <small class="text-gray-600">Korisnici s navedenim email adresama će moći pristupiti sadržaju čak i kada su prijave zatvorene.</small>
+</vs-col>
+
+
             <vs-col vs-w="12" class="mb-3"  v-if="selectedCategoryName.trim() == 'Događanja'">   
   <skijasi-select 
     v-model="selectedLanguage" 
