@@ -4,10 +4,11 @@
     <vs-row v-if="$helper.isAllowed('add_products')">
       <vs-col vs-lg="12">
         <vs-card>
-          <div slot="header">
-            <h3>Postavke za Plaćanje</h3>
-          </div>
-          <vs-row>
+  <div slot="header" class="card-header">
+    <h3 class="card-title">Postavke za Plaćanje</h3>
+  </div>
+  <vs-row class="content-section">
+
   
            
 
@@ -126,17 +127,20 @@
             </vs-col>
 
 
-            <vs-col vs-w="12" class="mb-3" v-if="selectedCategoryName.trim() == 'Događanja'">
+            <vs-col vs-w="12" class="email-section" v-if="selectedCategoryName.trim() == 'Događanja'">
+  <div class="section-divider"></div>
   <skijasi-textarea
     v-model="product.prijaveposebni"
     size="12"
-    class="custom-label"
-    :label="'Posebne dozvole (email adrese)'"
+    class="custom-label special-access-field"
+    :label="'Posebne dozvole (email adrese odvojene zarezom)'"
     :placeholder="'Unesite email adrese odvojene zarezom (npr. email1@test.com, email2@test.com)'"
     :alert="errors.prijaveposebni"
-    style="margin-bottom: 8px !important;"
   ></skijasi-textarea>
-  <small class="text-gray-600">Korisnici s navedenim email adresama će moći pristupiti sadržaju čak i kada su prijave zatvorene.</small>
+  <small class="help-text">
+    <i class="material-icons info-icon">info</i>
+    Korisnici s navedenim email adresama će moći pristupiti prijavnicama čak i kada su prijave zatvorene.
+  </small>
 </vs-col>
 
 
@@ -1060,5 +1064,171 @@ getProductDetail() {
     display: block; 
   }
 }
+
+
+
+
+.card-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+  .card-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+}
+
+.content-section {
+  padding: 2rem;
+}
+
+.section-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.email-section {
+
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  margin-bottom: 7rem;
+
+  .special-access-field {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .help-text {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 4px;
+    border-left: 3px solid #17a2b8;
+
+    .info-icon {
+      font-size: 1.2rem;
+      margin-right: 0.5rem;
+      color: #17a2b8;
+    }
+  }
+}
+
+.custom-label {
+  .skijasi-text__label,
+  .skijasi-select__label,
+  .skijasi-upload-image-dogadaji__label,
+  .skijasi-date__label,
+  .skijasi-editor__label,
+  .skijasi-textarea__label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  input,
+  select,
+  textarea {
+    border: 1px solid #dce0e3;
+    border-radius: 4px;
+    padding: 0.75rem;
+    transition: border-color 0.15s ease-in-out;
+
+    &:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+  }
+}
+
+.vs-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+
+  &.action-card {
+    background: #f8f9fa;
+    padding: 1rem;
+  }
+}
+
+// Style for switches
+.vs-switch {
+  margin: 1rem 0;
+  
+  &:not(:last-child) {
+    margin-right: 2rem;
+  }
+}
+
+// Button styling
+.vs-button {
+  &.vs-button-primary {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Improve language selector spacing
+.language-selector {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+// Editor improvements
+.custom-editor-wrapper {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .skijasi-editor__label {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .ck-editor__main {
+    min-height: 200px;
+  }
+}
+
+// Table improvements
+.skijasi-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+    padding: 1rem;
+  }
+
+  td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+}
+
 
 </style>

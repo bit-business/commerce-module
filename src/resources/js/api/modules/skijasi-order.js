@@ -13,6 +13,13 @@ export default {
     return resource.get(url);
   },
 
+
+  deleteOrderDetail(data) {
+    let ep = apiPrefix + "/v1/order/delete-order-detail";
+    return resource.post(ep, data);
+  },
+  
+  // Update the read method to include deleted items
   read(data) {
     let ep = apiPrefix + "/v1/order/read";
     let qs = QueryString(data);

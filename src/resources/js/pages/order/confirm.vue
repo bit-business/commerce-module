@@ -41,21 +41,35 @@
         </vs-card>
         <vs-row>
           <vs-col 
-  :vs-sm="12"
-  :vs-md="6"
-  :vs-lg="3"
-  v-for="(orderDetail, index) in order.orderDetails" 
-  :key="index"
->
-   
-      <vs-card :class="{ 'deleted-item': orderDetail.deletedAt }">
-        <div slot="media">
-          <img v-if="orderDetail.productDetail && orderDetail.productDetail.productImage"
-               :src="orderDetail.productDetail.productImage"
-               class="w-8 h-8"
-               alt="Product Image">
-          <span v-else>Nema slike</span>
-        </div>
+    :vs-sm="12"
+    :vs-md="6"
+    :vs-lg="3"
+    v-for="(orderDetail, index) in order.orderDetails" 
+    :key="index"
+  >
+    <vs-card :class="{ 'deleted-item': orderDetail.deletedAt }">
+      <!-- Add delete button at top right -->
+      <div class="delete-button-wrapper">
+  <vs-button
+    color="danger"
+    type="flat"
+    icon="close"
+    size="small"
+    class="delete-button-alt"
+    @click="confirmDeleteOrderDetail(orderDetail)"
+  >
+  </vs-button>
+</div>
+
+      <!-- Rest of your existing card content -->
+      <div slot="media">
+        <img v-if="orderDetail.productDetail && orderDetail.productDetail.productImage"
+             :src="orderDetail.productDetail.productImage"
+             class="w-8 h-8"
+             alt="Product Image">
+        <span v-else>Nema slike</span>
+      </div>
+
         <div>
           <h2>{{ orderDetail.productDetail.product.name }}</h2>
           <h1>{{ toCurrency(orderDetail.productDetail.price) }}</h1>
@@ -72,10 +86,12 @@
               <vs-icon icon="content_copy"></vs-icon>
               Kopiraj u otpremnicu
             </vs-button>
-          <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je kao obrisao korisnik,ali ako nedostaje i naplaceno je sluzi za kontrolu i da se zna da je placanje za ovo</p>
+          <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je obrisano i nije u narudžbi više, ali i dalje zabilježeno služi za kontrolu ukoliko je greška.</p>
         </div>
       </vs-card>
     </vs-col>
+
+
   </vs-row>
       </vs-col>
       <vs-col :vs-lg="6" :vs-sm="12" :vs-xs="12">
@@ -253,6 +269,39 @@
         </vs-col>
       </vs-row>
     </vs-popup>
+
+      <!-- Add delete confirmation dialog -->
+  <vs-popup
+    :active.sync="deleteConfirmDialog"
+    title="Potvrdi brisanje"
+    color="danger"
+  >
+    <div class="confirmation-content">
+      <p>Jeste li sigurni da želite izbrisati ovaj proizvod iz narudžbe?</p>
+      <p v-if="selectedOrderDetail">
+        Proizvod: {{ selectedOrderDetail.productDetail.product.name }}
+        <br>
+        Cijena: {{ toCurrency(selectedOrderDetail.price) }}
+      </p>
+    </div>
+    <div class="confirmation-actions">
+      <vs-button
+        type="border"
+        color="dark"
+        @click="deleteConfirmDialog = false"
+      >
+        Odustani
+      </vs-button>
+      <vs-button
+        type="filled"
+        color="danger"
+        @click="deleteOrderDetail"
+        :loading="isDeleting"
+      >
+        Izbriši
+      </vs-button>
+    </div>
+  </vs-popup>
   </div>
 </template>
 
@@ -266,6 +315,11 @@ export default {
   data: () => ({
     isLoading: false,
     loadingDetailId: null,
+
+
+    deleteConfirmDialog: false,
+  selectedOrderDetail: null,
+  isDeleting: false,
 
     trackingNumber: null,
     trackingNumberDialog: false,
@@ -525,6 +579,48 @@ export default {
       this.cancelDialog = true
       this.cancelMessage = null
     },
+
+
+    confirmDeleteOrderDetail(orderDetail) {
+    this.selectedOrderDetail = orderDetail;
+    this.deleteConfirmDialog = true;
+  },
+  async deleteOrderDetail() {
+    if (!this.selectedOrderDetail) return;
+
+    this.isDeleting = true;
+    try {
+        const response = await this.$api.skijasiOrder.deleteOrderDetail({
+            orderId: this.order.id,
+            orderDetailId: this.selectedOrderDetail.id
+        });
+
+        if (response.data.success) {
+            // Update the order with the response data
+            this.order = response.data.order;
+            
+            this.$vs.notify({
+                title: 'Uspješno',
+                text: response.data.message || 'Proizvod je izbrisan iz narudžbe',
+                color: 'success'
+            });
+        }
+    } catch (error) {
+        this.$vs.notify({
+            title: 'Greška',
+            text: error.message || 'Došlo je do greške prilikom brisanja',
+            color: 'danger'
+        });
+    } finally {
+        this.isDeleting = false;
+        this.deleteConfirmDialog = false;
+        this.selectedOrderDetail = null;
+        
+        // Refresh the order details after everything is done
+        await this.getOrderDetail();
+    }
+},
+
   },
 };
 </script>
@@ -655,4 +751,44 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+
+
+.delete-button-container {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 100;
+}
+
+.delete-btn {
+  padding: 0 !important;
+  width: 25px !important;
+  height: 25px !important;
+  min-width: unset !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.delete-btn .vs-icon {
+  font-size: 16px !important;
+}
+
+/* Add position relative to the card to ensure proper positioning */
+.vs-card {
+  position: relative !important;
+}
+
+.delete-button-container {
+  border: 2px solid red !important;
+  background: yellow !important;
+}
+
+.delete-btn {
+  border: 2px solid blue !important;
+  background: pink !important;
+}
+
 </style>

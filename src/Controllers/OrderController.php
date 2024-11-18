@@ -489,4 +489,88 @@ public function copyToShipping(Request $request)
 
 
 
+
+public function deleteOrderDetail(Request $request)
+{
+    try {
+        $request->validate([
+            'orderId' => 'required|exists:skijasi_orders,id',
+            'orderDetailId' => 'required|exists:skijasi_order_details,id'
+        ]);
+
+        DB::beginTransaction();
+
+        $orderDetail = OrderDetail::where('id', $request->orderDetailId)
+            ->where('order_id', $request->orderId)
+            ->first();
+
+        if (!$orderDetail) {
+            return ApiResponse::failed('Order detail not found');
+        }
+
+        // Get the order
+        $order = Order::find($request->orderId);
+
+        // Only allow deletion if order is in certain statuses
+        $allowedStatuses = ['waitingBuyerPayment', 'waitingSellerConfirmation', 'process'];
+        if (!in_array($order->status, $allowedStatuses)) {
+            return ApiResponse::failed('Cannot delete items from orders in this status');
+        }
+
+        // Calculate amounts to subtract
+        $itemTotal = $orderDetail->price * $orderDetail->quantity;
+        $itemDiscounted = $orderDetail->discounted;
+
+        // Update the order totals
+        $order->total -= $itemTotal;
+        $order->discounted -= $itemDiscounted;
+        
+        // Update paid amount proportionally
+        if ($order->total > 0) {
+            $order->payed = min($order->payed, $order->total);
+        } else {
+            $order->payed = 0;
+        }
+
+        // Return the quantity to product_details
+        $productDetail = ProductDetail::find($orderDetail->product_detail_id);
+        if ($productDetail) {
+            $productDetail->quantity += $orderDetail->quantity;
+            $productDetail->save();
+        }
+
+        // Soft delete the order detail
+        $orderDetail->delete();
+
+        // Recalculate totals from remaining items to ensure accuracy
+        $remainingTotal = 0;
+        $remainingDiscounted = 0;
+        foreach ($order->orderDetails()->withoutTrashed()->get() as $detail) {
+            $remainingTotal += ($detail->price * $detail->quantity);
+            $remainingDiscounted += $detail->discounted;
+        }
+
+        // Final update with recalculated values
+        $order->update([
+            'total' => $remainingTotal,
+            'discounted' => $remainingDiscounted,
+            'payed' => min($order->payed, $remainingTotal)
+        ]);
+
+        DB::commit();
+
+        return ApiResponse::success([
+            'message' => 'Uspješno obrisano iz narudžbe',
+            'order' => $order->fresh()->load(['orderDetails' => function($query) {
+                $query->withTrashed();
+            }, 'orderDetails.productDetail.product'])
+        ]);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+        return ApiResponse::failed($e);
+    }
+}
+
+
 }
