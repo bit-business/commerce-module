@@ -86,7 +86,7 @@
               <vs-icon icon="content_copy"></vs-icon>
               Kopiraj u otpremnicu
             </vs-button>
-          <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je obrisano i nije u narudžbi više, ali i dalje zabilježeno služi za kontrolu ukoliko je greška.</p>
+          <p v-if="orderDetail.deletedAt" class="deleted-notice">Ovo je obrisano i nije u narudžbi više, ali je i dalje zabilježeno te služi za kontrolu ukoliko je greška.</p>
         </div>
       </vs-card>
     </vs-col>
