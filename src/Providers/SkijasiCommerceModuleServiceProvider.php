@@ -57,19 +57,19 @@ class SkijasiCommerceModuleServiceProvider extends ServiceProvider
             //     ->runInBackground();
 
             // Add email batch processing schedule
-            $schedule->call(function () {
-                try {
-                    \Log::info('Starting daily email batch processing');
-                    app(EmailService::class)->processStoredBatches();
-                    \Log::info('Completed daily email batch processing');
-                } catch (\Exception $e) {
-                    \Log::error('Error processing email batches: ' . $e->getMessage());
-                }
-            })
-            ->dailyAt('09:10')
-            ->name('process-email-batches')
-            ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/email-batches.log'));
+            // $schedule->call(function () {
+            //     try {
+            //         \Log::info('Starting daily email batch processing');
+            //         app(EmailService::class)->processStoredBatches();
+            //         \Log::info('Completed daily email batch processing');
+            //     } catch (\Exception $e) {
+            //         \Log::error('Error processing email batches: ' . $e->getMessage());
+            //     }
+            // })
+            // ->dailyAt('09:10')
+            // ->name('process-email-batches')
+            // ->withoutOverlapping()
+            // ->appendOutputTo(storage_path('logs/email-batches.log'));
         });
     }
 
@@ -92,6 +92,6 @@ class SkijasiCommerceModuleServiceProvider extends ServiceProvider
         $this->commands(SkijasiCommerceSetup::class);
         $this->commands(SkijasiCommerceTestSetup::class);
         $this->commands(SkijasiDeleteExpiredOrder::class);
-        $this->commands(SkijasiProcessEmailBatches::class);
+        // $this->commands(SkijasiProcessEmailBatches::class);
     }
 }
