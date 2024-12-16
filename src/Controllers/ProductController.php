@@ -88,7 +88,7 @@ class ProductController extends Controller
                 'items.*.discount_id' => 'nullable|integer|exists:NadzorServera\Skijasi\Module\Commerce\Models\Discount,id',
                 'items.*.name' => 'required|string|max:255',
                 'items.*.quantity' => 'required|integer|min:0',
-                'items.*.price' => 'required|integer|min:0',
+             'items.*.price' => 'required|numeric|min:0|regex:/^\d*\.?\d{0,2}$/',
                 'items.*.s_k_u' => 'nullable|string|max:255',
                 'items.*.product_image' => 'required|string',
                 'galleryimages' => 'nullable',

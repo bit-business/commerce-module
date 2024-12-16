@@ -157,12 +157,14 @@
             <tr v-if="order.status != 'cancel' && order.status != 'done'">
               <!-- <th>{{ $t("orders.confirm.header.action") }}</th> -->
               <td>
+                <div class="actions-container">
+                  <div class="main-actions">
                 <vs-button type="relief" color="success" @click="done" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
                   <!-- <vs-icon icon="check"></vs-icon> -->
                   <vs-icon icon="done_all"></vs-icon>
                   Potvrdi da je plaćeno
                 </vs-button>
-                <vs-button type="relief" color="danger" @click="openCancelDialog" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
+                <vs-button type="relief" color="warning" @click="openCancelDialog" v-if="order.status == 'waitingBuyerPayment' || order.status == 'waitingSellerConfirmation'">
                   <vs-icon icon="clear"></vs-icon>
                   Odbij narudžbu
                 </vs-button>
@@ -174,6 +176,19 @@
                   <vs-icon icon="done_all"></vs-icon>
                 Završena narudžba 
                 </vs-button>
+              </div>
+                
+                <vs-button 
+        v-if="canDeleteOrders()"
+        type="relief" 
+        color="danger" 
+        @click="confirmDeleteOrder" 
+        class="delete-order-btn"
+      >
+        <vs-icon icon="delete"></vs-icon>
+        Obriši narudžbu
+      </vs-button>
+    </div>
               </td>
             </tr>
             <tr v-if="order.status == 'cancel'">
@@ -302,6 +317,40 @@
       </vs-button>
     </div>
   </vs-popup>
+
+
+     <!-- Add delete order confirmation dialog -->
+     <vs-popup
+      :active.sync="deleteOrderDialog"
+      title="Potvrdi brisanje narudžbe"
+      color="danger"
+    >
+      <div class="confirmation-content">
+        <p>Jeste li sigurni da želite obrisati ovu narudžbu?</p>
+        <p>
+          Narudžba broj: {{ order.id }}<br>
+          Kupac: {{ order.user.name }}<br>
+          Ukupno: {{ toCurrency(order.total) }}
+        </p>
+      </div>
+      <div class="confirmation-actions">
+        <vs-button
+          type="border"
+          color="dark"
+          @click="deleteOrderDialog = false"
+        >
+          Odustani
+        </vs-button>
+        <vs-button
+          type="filled"
+          color="danger"
+          @click="deleteOrder"
+          :loading="isDeletingOrder"
+        >
+          Izbriši narudžbu
+        </vs-button>
+      </div>
+    </vs-popup>
   </div>
 </template>
 
@@ -316,6 +365,10 @@ export default {
     isLoading: false,
     loadingDetailId: null,
 
+    deleteOrderDialog: false,
+    isDeletingOrder: false,
+    allowedRoles: [1, 2439, 4417],
+    userRole: null,
 
     deleteConfirmDialog: false,
   selectedOrderDetail: null,
@@ -356,9 +409,68 @@ export default {
   }),
   mounted() {
     this.getOrderDetail();
-    
+    this.getUser();
   },
   methods: {
+    getUser() {
+      this.errors = {};
+      this.$openLoader();
+      this.$api.skijasiAuthUser
+        .user({})
+        .then((response) => {
+          this.$closeLoader();
+          // Get the role directly from the user response
+          if (response.data.user.roles && response.data.user.roles.length > 0) {
+            this.userRole = response.data.user.roles[0].id;
+          }
+        })
+        .catch((error) => {
+          this.errors = error.errors;
+          this.$closeLoader();
+          this.$vs.notify({
+            title: this.$t("alert.danger"),
+            text: error.message,
+            color: "danger",
+          });
+        });
+    },
+    
+    canDeleteOrders() {
+      return this.allowedRoles.includes(this.userRole);
+    },
+
+    confirmDeleteOrder() {
+      this.deleteOrderDialog = true;
+    },
+    
+    async deleteOrder() {
+      this.isDeletingOrder = true;
+      try {
+        const response = await this.$api.skijasiOrder.deleteOrder({
+          id: this.order.id
+        });
+
+        if (response.data.success) {
+          this.$vs.notify({
+            title: "Uspješno",
+            text: "Narudžba je uspješno obrisana",
+            color: "success"
+          });
+          
+          // Redirect to orders list
+          this.$router.push({ name: "OrderBrowse" });
+        }
+      } catch (error) {
+        this.$vs.notify({
+          title: "Greška",
+          text: error.message || "Došlo je do greške prilikom brisanja narudžbe",
+          color: "danger"
+        });
+      } finally {
+        this.isDeletingOrder = false;
+        this.deleteOrderDialog = false;
+      }
+    },
 
     copyToShipping(orderDetail) {
     this.isLoading = true;
@@ -789,6 +901,58 @@ img {
 .delete-btn {
   border: 2px solid blue !important;
   background: pink !important;
+}
+
+
+.confirmation-content {
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.actions-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.main-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.delete-order-btn {
+  margin-left: auto;
+}
+
+/* Update your existing media query */
+@media screen and (max-width: 768px) {
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .main-actions {
+    width: 100%;
+  }
+
+  .delete-order-btn {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .main-actions .vs-button {
+    width: 100%;
+    margin: 0.25rem 0;
+  }
 }
 
 </style>

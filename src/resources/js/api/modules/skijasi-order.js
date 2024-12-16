@@ -18,6 +18,11 @@ export default {
     let ep = apiPrefix + "/v1/order/delete-order-detail";
     return resource.post(ep, data);
   },
+
+  deleteOrder(data) {
+    let ep = apiPrefix + "/v1/order/delete-order";
+    return resource.post(ep, data);
+  },
   
   // Update the read method to include deleted items
   read(data) {

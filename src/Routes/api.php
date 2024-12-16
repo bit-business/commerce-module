@@ -92,6 +92,9 @@ Route::group(['prefix' => $api_route_prefix, 'as' => 'skijasi.', 'middleware' =>
 
             Route::post('/delete-order-detail', HelperRoute::getController('OrderController@deleteOrderDetail'))
             ->middleware(SkijasiCheckPermissions::class.':confirm_orders');
+
+            Route::post('/delete-order', HelperRoute::getController('OrderController@deleteOrder'))
+            ->middleware(SkijasiCheckPermissions::class.':confirm_orders');
   
             Route::post('/copy-to-shipping', HelperRoute::getController('OrderController@copyToShipping'))->middleware(SkijasiCheckPermissions::class.':confirm_orders');
             

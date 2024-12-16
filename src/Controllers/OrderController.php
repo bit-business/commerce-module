@@ -49,7 +49,8 @@ class OrderController extends Controller
             $status = $request->status;
           
             if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 8, 9, 2439, 4417])) {
-                $orders = Order::when($request->relation, function ($query) use ($request) {
+                $orders = Order::whereNull('deleted_at')  // Add this line to exclude deleted orders
+                ->when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation));
                 })
                     ->when($search, function ($query, $search) {
@@ -66,7 +67,8 @@ class OrderController extends Controller
                     ->orderBy($request->order_field ?? 'updated_at', $request->order_direction ?? 'desc')
                     ->paginate($request->limit ?? 10);
             } else {
-                $orders = Order::when($request->relation, function ($query) use ($request) {
+                $orders = Order::whereNull('deleted_at')  // Add this line to exclude deleted orders
+                ->when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation))->where('user_id', auth()->user()->id);
                 })
                     ->where(function ($query) use ($search) {
@@ -564,6 +566,64 @@ public function deleteOrderDetail(Request $request)
             'order' => $order->fresh()->load(['orderDetails' => function($query) {
                 $query->withTrashed();
             }, 'orderDetails.productDetail.product'])
+        ]);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+        return ApiResponse::failed($e);
+    }
+}
+
+
+
+
+public function deleteOrder(Request $request)
+{
+    try {
+        $request->validate([
+            'id' => 'required|exists:NadzorServera\Skijasi\Module\Commerce\Models\Order,id',
+        ]);
+
+        DB::beginTransaction();
+
+        $order = Order::findOrFail($request->id);
+        
+        // Only allow deletion for certain statuses
+        $allowedStatuses = ['waitingBuyerPayment', 'waitingSellerConfirmation', 'process'];
+        if (!in_array($order->status, $allowedStatuses)) {
+            return ApiResponse::failed('Nije moguće obrisati narudžbe u ovom statusu');
+        }
+
+        // First handle the order details
+        foreach ($order->orderDetails as $orderDetail) {
+            // Return quantities to product details
+            $productDetail = ProductDetail::find($orderDetail->product_detail_id);
+            if ($productDetail) {
+                $productDetail->quantity += $orderDetail->quantity;
+                $productDetail->save();
+            }
+            
+            // Soft delete the order detail
+            $orderDetail->delete();
+        }
+
+        // Now handle related order payment if it exists
+        if ($order->orderPayment) {
+            $order->orderPayment->delete();
+        }
+
+        // Update order status to cancel and soft delete
+        $order->update([
+     
+            'cancel_message' => 'Narudžba obrisana od strane nas!',
+            'deleted_at' => now()
+        ]);
+
+        DB::commit();
+
+        return ApiResponse::success([
+            'message' => 'Narudžba je uspješno obrisana i više se neće prikazivati na listi narudžbi.',
+            'success' => true
         ]);
 
     } catch (Exception $e) {
