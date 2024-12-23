@@ -49,7 +49,7 @@ class OrderController extends Controller
             $status = $request->status;
           
             if (in_array($roleId, [1, 2, 3, 4, 5, 6, 7, 8, 9, 2439, 4417])) {
-                $orders = Order::whereNull('deleted_at')  // Add this line to exclude deleted orders
+                $orders = Order::whereNull('deleted_at')  //exclude deleted orders
                 ->when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation));
                 })
@@ -67,7 +67,7 @@ class OrderController extends Controller
                     ->orderBy($request->order_field ?? 'updated_at', $request->order_direction ?? 'desc')
                     ->paginate($request->limit ?? 10);
             } else {
-                $orders = Order::whereNull('deleted_at')  // Add this line to exclude deleted orders
+                $orders = Order::whereNull('deleted_at')  //  exclude deleted orders
                 ->when($request->relation, function ($query) use ($request) {
                     return $query->with(explode(',', $request->relation))->where('user_id', auth()->user()->id);
                 })

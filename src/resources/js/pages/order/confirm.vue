@@ -367,8 +367,8 @@ export default {
 
     deleteOrderDialog: false,
     isDeletingOrder: false,
-    allowedRoles: [1, 2439, 4417],
-    userRole: null,
+    allowedUserIds: [1, 2439, 4417],
+    userId: null,
 
     deleteConfirmDialog: false,
   selectedOrderDetail: null,
@@ -419,10 +419,8 @@ export default {
         .user({})
         .then((response) => {
           this.$closeLoader();
-          // Get the role directly from the user response
-          if (response.data.user.roles && response.data.user.roles.length > 0) {
-            this.userRole = response.data.user.roles[0].id;
-          }
+          // Store user ID instead of role
+          this.userId = response.data.user.id;
         })
         .catch((error) => {
           this.errors = error.errors;
@@ -434,9 +432,8 @@ export default {
           });
         });
     },
-    
     canDeleteOrders() {
-      return this.allowedRoles.includes(this.userRole);
+      return this.allowedUserIds.includes(Number(this.userId));
     },
 
     confirmDeleteOrder() {
